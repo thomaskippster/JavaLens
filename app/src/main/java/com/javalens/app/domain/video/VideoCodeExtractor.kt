@@ -10,31 +10,22 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
 class VideoCodeExtractor(private val context: Context) {
-
-    /**
-     * Extracts frames from a video at a fixed interval (500ms) for OCR analysis.
-     */
     fun extractFrames(videoUri: Uri, intervalMs: Long = 500): Flow<Bitmap> = flow {
         val retriever = MediaMetadataRetriever()
         try {
             retriever.setDataSource(context, videoUri)
             val durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-            val duration = durationStr?.toLong() ?: 0L
+            val fpsStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CAPTURE_FRAMERATE)
+            val fps = fpsStr?.toFloatOrNull() ?: 30f
+            val totalFrames = ((durationStr?.toLongOrNull() ?: 0L) / 1000f * fps).toInt()
+            val framesToSkip = ((intervalMs / 1000f) * fps).toInt().coerceAtLeast(1)
 
-            var currentMillis = 0L
-            while (currentMillis < duration) {
-                // Extract frame at current timestamp (in microseconds)
-                val frame = retriever.getFrameAtTime(
-                    currentMillis * 1000, 
-                    MediaMetadataRetriever.OPTION_CLOSEST_SYNC
-                )
-                if (frame != null) {
-                    emit(frame)
-                }
-                currentMillis += intervalMs
+            var currentIndex = 0
+            while (currentIndex < totalFrames) {
+                val frames = retriever.getFramesAtIndex(currentIndex, 1, MediaMetadataRetriever.BITMAP_CONTROL_DEFAULT)
+                if (!frames.isNullOrEmpty()) emit(frames[0])
+                currentIndex += framesToSkip
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
         } finally {
             retriever.release()
         }

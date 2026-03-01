@@ -4,11 +4,15 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.VideoFile
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,16 +32,19 @@ import com.javalens.app.ui.theme.NeonIndigo
 fun HubScreen(
     onScanClick: () -> Unit,
     onVaultClick: () -> Unit,
-    onChatClick: () -> Unit
+    onChatClick: () -> Unit,
+    onVideoClick: () -> Unit,
+    onGitHubClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(CyberBlack)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(48.dp))
         Text(
             text = "JAVALENS",
             style = MaterialTheme.typography.displayMedium.copy(
@@ -53,90 +60,63 @@ fun HubScreen(
             color = NeonIndigo.copy(alpha = 0.6f)
         )
         
-        Spacer(modifier = Modifier.height(64.dp))
+        Spacer(modifier = Modifier.height(48.dp))
 
-        HubButton(
-            title = "LIVE SCAN",
-            subtitle = "EXTRACT CODE VIA CAMERA",
-            icon = Icons.Default.CameraAlt,
-            color = NeonIndigo,
-            onClick = onScanClick
-        )
+        HubButton("LIVE SCAN", "EXTRACT CODE VIA CAMERA", Icons.Default.CameraAlt, NeonIndigo, onScanClick)
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        HubButton("SNIPPET VAULT", "MANAGE YOUR JAVA LIBRARY", Icons.Default.Storage, NeonEmerald, onVaultClick)
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        HubButton("AI ANALYZER", "CHAT WITH YOUR CODEBASE", Icons.Default.Code, Color.White.copy(alpha = 0.8f), onChatClick)
         
         Spacer(modifier = Modifier.height(16.dp))
-
         HubButton(
-            title = "SNIPPET VAULT",
-            subtitle = "MANAGE YOUR JAVA LIBRARY",
-            icon = Icons.Default.Storage,
-            color = NeonEmerald,
-            onClick = onVaultClick
+            title = "VIDEO IMPORT",
+            subtitle = "OFFLINE NPU EXTRACTION",
+            icon = Icons.Default.VideoFile,
+            color = Color(0xFFFFB800),
+            onClick = onVideoClick
         )
-
         Spacer(modifier = Modifier.height(16.dp))
-
         HubButton(
-            title = "AI ANALYZER",
-            subtitle = "CHAT WITH YOUR CODEBASE",
-            icon = Icons.Default.Code,
-            color = Color.White.copy(alpha = 0.8f),
-            onClick = onChatClick
+            title = "GITHUB SYNC",
+            subtitle = "PUSH TO REPOSITORIES",
+            icon = Icons.Default.CloudSync,
+            color = Color.Gray,
+            onClick = onGitHubClick
         )
         
-        Spacer(modifier = Modifier.height(64.dp))
-        
+        Spacer(modifier = Modifier.height(48.dp))
         Text(
             text = "TENSOR G4 NPU ACTIVE",
             style = MaterialTheme.typography.labelSmall,
-            color = NeonIndigo.copy(alpha = 0.4f)
+            color = NeonIndigo.copy(alpha = 0.4f),
+            modifier = Modifier.padding(bottom = 24.dp)
         )
     }
 }
 
 @Composable
-fun HubButton(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    color: Color,
-    onClick: () -> Unit
-) {
+fun HubButton(title: String, subtitle: String, icon: ImageVector, color: Color, onClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(100.dp)
-            .clickable { onClick() },
+        modifier = Modifier.fillMaxWidth().height(100.dp).clickable { onClick() },
         shape = RoundedCornerShape(32.dp),
         colors = CardDefaults.cardColors(containerColor = CyberSlate),
         border = BorderStroke(1.dp, color.copy(alpha = 0.2f))
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(color.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
+                modifier = Modifier.size(56.dp).background(color.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(28.dp))
-            }
+            ) { Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(28.dp)) }
             Spacer(modifier = Modifier.width(20.dp))
             Column {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Black,
-                    color = Color.White,
-                    fontSize = 18.sp
-                )
-                Text(
-                    text = subtitle,
-                    color = Color.Gray,
-                    fontSize = 10.sp
-                )
+                Text(text = title, fontWeight = FontWeight.Black, color = Color.White, fontSize = 18.sp)
+                Text(text = subtitle, color = Color.Gray, fontSize = 10.sp)
             }
         }
     }

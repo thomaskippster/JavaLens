@@ -45,6 +45,7 @@ class MainActivity : ComponentActivity() {
                     val scannerViewModel = remember { ScannerViewModel(db.snippetDao()) }
                     val snippets by db.snippetDao().getAllSnippets().collectAsState(initial = emptyList())
                     
+                    // SCHRITT 4: AppNavigation initialisieren (ViewModels & DB-Snippets)
                     AppNavigation(
                         scannerViewModel = scannerViewModel,
                         vaultSnippets = snippets

@@ -62,30 +62,24 @@ fun HubScreen(
         
         Spacer(modifier = Modifier.height(48.dp))
 
+        // LIVE SCAN
         HubButton("LIVE SCAN", "EXTRACT CODE VIA CAMERA", Icons.Default.CameraAlt, NeonIndigo, onScanClick)
         Spacer(modifier = Modifier.height(16.dp))
         
+        // VAULT
         HubButton("SNIPPET VAULT", "MANAGE YOUR JAVA LIBRARY", Icons.Default.Storage, NeonEmerald, onVaultClick)
         Spacer(modifier = Modifier.height(16.dp))
         
+        // VIDEO IMPORT
+        HubButton("VIDEO IMPORT", "OFFLINE NPU EXTRACTION", Icons.Default.VideoFile, Color(0xFFFFB800), onVideoClick)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // PROJECT CHAT
         HubButton("AI ANALYZER", "CHAT WITH YOUR CODEBASE", Icons.Default.Code, Color.White.copy(alpha = 0.8f), onChatClick)
-        
         Spacer(modifier = Modifier.height(16.dp))
-        HubButton(
-            title = "VIDEO IMPORT",
-            subtitle = "OFFLINE NPU EXTRACTION",
-            icon = Icons.Default.VideoFile,
-            color = Color(0xFFFFB800),
-            onClick = onVideoClick
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        HubButton(
-            title = "GITHUB SYNC",
-            subtitle = "PUSH TO REPOSITORIES",
-            icon = Icons.Default.CloudSync,
-            color = Color.Gray,
-            onClick = onGitHubClick
-        )
+
+        // GITHUB SYNC
+        HubButton("GITHUB SYNC", "PUSH TO REPOSITORIES", Icons.Default.CloudSync, Color.Gray, onGitHubClick)
         
         Spacer(modifier = Modifier.height(48.dp))
         Text(

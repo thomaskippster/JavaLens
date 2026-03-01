@@ -30,7 +30,7 @@ fun VideoImportScreen(
     val progress by viewModel.progress.collectAsState()
     val extractedCode by viewModel.extractedCode.collectAsState()
 
-    // Real File Picker for MP4
+    // SCHRITT 1: Video-Picker aktivieren
     val videoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -110,7 +110,7 @@ fun VideoImportScreen(
                     .padding(12.dp)
             ) {
                 Text(
-                    text = extractedCode.take(500) + "...",
+                    text = extractedCode,
                     color = Color.Green,
                     fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                     fontSize = 10.sp

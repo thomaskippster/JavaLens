@@ -8,10 +8,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.javalens.app.domain.export.GitHubApi
+import com.javalens.app.domain.export.GitHubExporter
 import com.javalens.app.domain.video.VideoCodeExtractor
 import com.javalens.app.ui.screens.*
 import com.javalens.app.viewmodel.ScannerViewModel
 import com.javalens.app.viewmodel.VideoImportViewModel
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonGsonConverterFactory
 
 sealed class Screen(val route: String) {
     object Hub : Screen("hub")
@@ -26,7 +30,18 @@ sealed class Screen(val route: String) {
 fun AppNavigation(scannerViewModel: ScannerViewModel, vaultSnippets: List<com.javalens.app.data.SnippetEntity>) {
     val navController = rememberNavController()
     val context = LocalContext.current
+    
+    // Core Logic Setup
     val videoViewModel = remember { VideoImportViewModel(VideoCodeExtractor(context)) }
+    
+    val githubApi = remember {
+        Retrofit.Builder()
+            .baseUrl("https://api.github.com/")
+            .addConverterFactory(GsonGsonConverterFactory.create())
+            .build()
+            .create(GitHubApi::class.java)
+    }
+    val githubExporter = remember { GitHubExporter(context, githubApi) }
 
     NavHost(navController = navController, startDestination = Screen.Hub.route) {
         composable(Screen.Hub.route) {
@@ -41,10 +56,18 @@ fun AppNavigation(scannerViewModel: ScannerViewModel, vaultSnippets: List<com.ja
         composable(Screen.Scanner.route) { ScannerScreen(viewModel = scannerViewModel) }
         composable(Screen.Vault.route) { SnippetLibraryScreen(snippets = vaultSnippets, onBack = { navController.popBackStack() }) }
         composable(Screen.Chat.route) { 
-            val context by scannerViewModel.currentScannedCode.collectAsState()
-            ProjectChatScreen(codeContext = context) 
+            val codeContext by scannerViewModel.currentScannedCode.collectAsState()
+            ProjectChatScreen(codeContext = codeContext) 
         }
-        composable(Screen.VideoImport.route) { VideoImportScreen(viewModel = videoViewModel, onBack = { navController.popBackStack() }) }
-        composable(Screen.GitHub.route) { GitHubSyncScreen(onBack = { navController.popBackStack() }) }
+        composable(Screen.VideoImport.route) { 
+            VideoImportScreen(viewModel = videoViewModel, onBack = { navController.popBackStack() }) 
+        }
+        composable(Screen.GitHub.route) { 
+            GitHubSyncScreen(
+                exporter = githubExporter, 
+                snippets = vaultSnippets,
+                onBack = { navController.popBackStack() }
+            ) 
+        }
     }
 }

@@ -38,8 +38,19 @@ class GitHubExporter(private val context: Context, private val api: GitHubApi) {
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
-    fun saveToken(token: String) = secureStorage.edit().putString("gh_token", token).apply()
-    fun getToken(): String? = secureStorage.getString("gh_token", null)
+    /**
+     * Speichert das GitHub Token verschlüsselt in den SharedPreferences.
+     */
+    fun saveToken(token: String) {
+        secureStorage.edit().putString("gh_token", token).apply()
+    }
+
+    /**
+     * Lädt das verschlüsselte GitHub Token.
+     */
+    fun getToken(): String? {
+        return secureStorage.getString("gh_token", null)
+    }
 
     suspend fun uploadFile(
         owner: String,

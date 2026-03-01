@@ -31,6 +31,19 @@ class ScannerViewModel(
     private val _isProcessingAi = MutableStateFlow(false)
     val isProcessingAi: StateFlow<Boolean> = _isProcessingAi.asStateFlow()
 
+    private val _isAiAvailable = MutableStateFlow<Boolean?>(null)
+    val isAiAvailable: StateFlow<Boolean?> = _isAiAvailable.asStateFlow()
+
+    init {
+        checkAiStatus()
+    }
+
+    fun checkAiStatus() {
+        viewModelScope.launch {
+            _isAiAvailable.value = aiService.isAvailable()
+        }
+    }
+
     fun toggleScan() {
         _isScanning.value = !_isScanning.value
     }

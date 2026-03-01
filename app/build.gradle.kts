@@ -51,6 +51,9 @@ dependencies {
 
     implementation("com.google.mlkit:text-recognition:16.0.0")
     
+    // Security für EncryptedSharedPreferences
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    
     // AICore statt Cloud SDK
     implementation("com.google.ai.edge.aicore:aicore:1.0.0-alpha01")
 

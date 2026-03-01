@@ -45,7 +45,9 @@ fun AppNavigation(scannerViewModel: ScannerViewModel, vaultSnippets: List<com.ja
 
     NavHost(navController = navController, startDestination = Screen.Hub.route) {
         composable(Screen.Hub.route) {
+            val isAiAvailable by scannerViewModel.isAiAvailable.collectAsState()
             HubScreen(
+                isAiAvailable = isAiAvailable,
                 onScanClick = { navController.navigate(Screen.Scanner.route) },
                 onVaultClick = { navController.navigate(Screen.Vault.route) },
                 onChatClick = { navController.navigate(Screen.Chat.route) },

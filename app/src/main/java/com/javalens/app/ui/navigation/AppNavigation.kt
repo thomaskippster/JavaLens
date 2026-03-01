@@ -10,12 +10,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.javalens.app.domain.export.GitHubApi
 import com.javalens.app.domain.export.GitHubExporter
-import com.javalens.app.domain.video.VideoCodeExtractor
 import com.javalens.app.ui.screens.*
 import com.javalens.app.viewmodel.ScannerViewModel
 import com.javalens.app.viewmodel.VideoImportViewModel
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonGsonConverterFactory
+import retrofit2.converter.gson.GsonConverterFactory
 
 sealed class Screen(val route: String) {
     object Hub : Screen("hub")
@@ -27,17 +26,19 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun AppNavigation(scannerViewModel: ScannerViewModel, vaultSnippets: List<com.javalens.app.data.SnippetEntity>) {
+fun AppNavigation(
+    scannerViewModel: ScannerViewModel,
+    videoViewModel: VideoImportViewModel,
+    vaultSnippets: List<com.javalens.app.data.SnippetEntity>
+) {
     val navController = rememberNavController()
     val context = LocalContext.current
     
-    // Core Logic Setup
-    val videoViewModel = remember { VideoImportViewModel(VideoCodeExtractor(context)) }
-    
+    // GitHub Logic Setup
     val githubApi = remember {
         Retrofit.Builder()
             .baseUrl("https://api.github.com/")
-            .addConverterFactory(GsonGsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(GitHubApi::class.java)
     }

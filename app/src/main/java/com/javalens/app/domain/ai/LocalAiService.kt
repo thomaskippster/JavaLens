@@ -7,18 +7,6 @@ import kotlinx.coroutines.withContext
 class LocalAiService {
     private val generativeModel = GenerativeModel(modelName = "gemini-nano")
 
-    /**
-     * Prüft, ob Gemini Nano auf diesem Gerät (Pixel 9) bereit ist.
-     */
-    suspend fun isAvailable(): Boolean = withContext(Dispatchers.IO) {
-        try {
-            // Ein minimaler Test-Aufruf oder Status-Check
-            generativeModel.generateContent("ping").text != null
-        } catch (e: Exception) {
-            false
-        }
-    }
-
     suspend fun magicOcrFix(rawCode: String): String = withContext(Dispatchers.IO) {
         val prompt = "Du bist ein Java Expert. Repariere ausschließlich Tippfehler. Gib NUR den korrigierten Code zurück.\nCode:\n$rawCode"
         try { generativeModel.generateContent(prompt).text ?: rawCode } catch (e: Exception) { rawCode }
@@ -35,7 +23,7 @@ class LocalAiService {
                 description = parts.getOrNull(2)?.trim() ?: "No description"
             )
         } catch (e: Exception) {
-            SnippetMetadata("Untitled", "General", "AI Error: ${e.message}")
+            SnippetMetadata("Untitled", "General", "AI Error")
         }
     }
 

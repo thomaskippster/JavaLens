@@ -39,29 +39,18 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    
-    // Navigation (Wichtig!)
     implementation("androidx.navigation:navigation-compose:2.7.7")
-
     val cameraxVersion = "1.3.1"
     implementation("androidx.camera:camera-core:${cameraxVersion}")
     implementation("androidx.camera:camera-camera2:${cameraxVersion}")
     implementation("androidx.camera:camera-lifecycle:${cameraxVersion}")
     implementation("androidx.camera:camera-view:${cameraxVersion}")
-
     implementation("com.google.mlkit:text-recognition:16.0.0")
-    
-    // Security für EncryptedSharedPreferences
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
-    
-    // AICore statt Cloud SDK
     implementation("com.google.ai.edge.aicore:aicore:1.0.0-alpha01")
-
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:${roomVersion}")
     implementation("androidx.room:room-ktx:${roomVersion}")
     ksp("androidx.room:room-compiler:${roomVersion}")
-
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("androidx.core:core-ktx:1.12.0")

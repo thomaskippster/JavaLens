@@ -60,6 +60,9 @@ class GitHubExporter(private val context: Context, private val api: GitHubApi) {
         commitMessage: String
     ): Boolean {
         val token = getToken() ?: return false
+
+        // Sanitize path (replace spaces and invalid special chars with underscore)
+        val sanitizedPath = path.replace(Regex("[^a-zA-Z0-9./_-]"), "_")
         
         // Base64 encoding WITHOUT NEWLINES (Required for GitHub API)
         val base64Content = android.util.Base64.encodeToString(
@@ -70,7 +73,7 @@ class GitHubExporter(private val context: Context, private val api: GitHubApi) {
         val request = GitHubFileRequest(commitMessage, base64Content)
         
         return try {
-            val response = api.createOrUpdateFile(owner, repo, path, "Bearer $token", request)
+            val response = api.createOrUpdateFile(owner, repo, sanitizedPath, "Bearer $token", request)
             response.isSuccessful
         } catch (e: Exception) {
             e.printStackTrace()

@@ -7,6 +7,10 @@ import kotlinx.coroutines.withContext
 class LocalAiService {
     private val generativeModel = GenerativeModel(modelName = "gemini-nano")
 
+    suspend fun isAvailable(): Boolean = withContext(Dispatchers.IO) {
+        try { true } catch (e: Exception) { false }
+    }
+
     suspend fun magicOcrFix(rawCode: String): String = withContext(Dispatchers.IO) {
         val prompt = "Du bist ein Java Expert. Repariere ausschließlich Tippfehler. Gib NUR den korrigierten Code zurück.\nCode:\n$rawCode"
         try { generativeModel.generateContent(prompt).text ?: rawCode } catch (e: Exception) { rawCode }

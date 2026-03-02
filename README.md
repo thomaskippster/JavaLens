@@ -1,6 +1,6 @@
 # 📱 JavaLens - Pixel 9 Exclusive Edition
 
-**JavaLens** is a powerful Android utility designed exclusively for the **Google Pixel 9**. It leverages on-device AI (Gemini Nano) and the Tensor G4 NPU to extract, repair, and manage Java source code directly from camera feeds, videos, or static images.
+**JavaLens** is a powerful Native Android utility designed exclusively for the **Google Pixel 9**. It leverages on-device AI (Gemini Nano) and the Tensor G4 NPU to extract, repair, and manage Java source code directly from camera feeds, videos, or static images.
 
 ## 🚀 Key Features
 
@@ -14,32 +14,24 @@
 
 ## 🛠 Tech Stack
 
-- **Framework**: Expo (SDK 54) / React Native
-- **UI**: Custom "Cyber-Dark" Design System with Neon Accents
-- **Icons**: Lucide React Native
-- **AI/ML**: Google ML Kit (OCR) & Gemini Nano Integration simulation
-- **Haptics**: Pixel 9 Haptics Engine integration via `expo-haptics`
+- **Platform**: Native Android (Kotlin)
+- **UI**: Jetpack Compose with Custom "Cyber-Dark" Design System
+- **Architecture**: MVVM + Clean Architecture
+- **AI/ML**: Google ML Kit (OCR) & Gemini Nano Integration (AICore)
+- **Database**: Room Persistence Library
 
 ## 📦 Installation & Setup
 
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/thomaskippster/javalens.git
-   cd javalens
    ```
 
-2. **Install dependencies**:
-   ```bash
-   npm install --legacy-peer-deps
-   ```
+2. **Open in Android Studio**:
+   Import the project as a Gradle project.
 
-3. **Start the development server**:
-   ```bash
-   npx expo start --clear
-   ```
-
-4. **Run on Pixel 9**:
-   Open the **Expo Go** app on your Pixel 9 and scan the QR code displayed in your terminal.
+3. **Build & Run**:
+   Connect your **Pixel 9** (or compatible device) and click "Run" in Android Studio to build and start the app.
 
 ## 🎨 Design System
 

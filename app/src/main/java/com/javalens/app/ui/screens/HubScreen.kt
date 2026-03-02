@@ -17,6 +17,7 @@ import com.javalens.app.ui.components.HubButton
 
 @Composable
 fun HubScreen(
+    isAiAvailable: Boolean? = null,
     onScanClick: () -> Unit,
     onVaultClick: () -> Unit,
     onChatClick: () -> Unit,
@@ -29,6 +30,13 @@ fun HubScreen(
     ) {
         Spacer(modifier = Modifier.height(48.dp))
         Text("JAVALENS", style = MaterialTheme.typography.displayMedium, color = Color.White)
+        
+        Text(
+            text = if (isAiAvailable == true) "AI Engine: ONLINE" else "AI Engine: OFFLINE",
+            style = MaterialTheme.typography.labelLarge,
+            color = if (isAiAvailable == true) NeonEmerald else Color.Red
+        )
+
         Spacer(modifier = Modifier.height(48.dp))
         HubButton("LIVE SCAN", "CAMERA OCR", Icons.Default.CameraAlt, NeonIndigo, onScanClick)
         Spacer(modifier = Modifier.height(16.dp))

@@ -39,7 +39,6 @@ spotless {
         target("**/*.kt")
         targetExclude("**/build/**/*.kt")
         ktlint(libs.versions.ktlint.get())
-        userData(mapOf("indent_size" to "4", "continuation_indent_size" to "4"))
     }
     kotlinGradle {
         target("*.gradle.kts")
@@ -68,7 +67,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime-ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.security.crypto)
     implementation(libs.kotlinx.coroutines.play.services)

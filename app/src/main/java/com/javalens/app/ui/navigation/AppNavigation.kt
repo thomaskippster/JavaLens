@@ -18,7 +18,9 @@ import com.javalens.app.domain.repository.SnippetRepository
 import com.javalens.app.ui.screens.*
 import com.javalens.app.viewmodel.ScannerViewModel
 import com.javalens.app.viewmodel.VideoImportViewModel
+import com.javalens.app.viewmodel.ProjectChatViewModel
 import kotlinx.collections.immutable.ImmutableList
+import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -91,9 +93,10 @@ fun AppNavigation(
         }
         composable(Screen.Chat.route) { 
             val codeContext by scannerViewModel.currentScannedCode.collectAsState()
+            val chatViewModel: ProjectChatViewModel = koinViewModel()
             ProjectChatScreen(
                 codeContext = codeContext,
-                aiService = remember { LocalAiService(context) }
+                viewModel = chatViewModel
             ) 
         }
         composable(Screen.VideoImport.route) { 

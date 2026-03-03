@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -15,23 +16,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.javalens.app.domain.ai.LocalAiService
+import com.javalens.app.domain.model.ChatMessage
 import com.javalens.app.ui.theme.CyberBlack
 import com.javalens.app.ui.theme.CyberSlate
 import com.javalens.app.ui.theme.NeonIndigo
-import kotlinx.coroutines.launch
-
-data class ChatMessage(val text: String, val isUser: Boolean)
+import com.javalens.app.viewmodel.ProjectChatViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectChatScreen(
     codeContext: String,
-    aiService: LocalAiService
+    viewModel: ProjectChatViewModel
 ) {
     var query by remember { mutableStateOf("") }
-    val chatMessages = remember { mutableStateListOf<ChatMessage>() }
-    val scope = rememberCoroutineScope()
+    val chatMessages by viewModel.chatMessages.collectAsState()
+    val isTyping by viewModel.isTyping.collectAsState()
+    val listState = rememberLazyListState()
+
+    // Auto-scroll to bottom when new messages arrive
+    LaunchedEffect(chatMessages.size) {
+        if (chatMessages.isNotEmpty()) {
+            listState.animateScrollToItem(chatMessages.size - 1)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -48,6 +55,7 @@ fun ProjectChatScreen(
 
         // Chat History
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
@@ -55,6 +63,14 @@ fun ProjectChatScreen(
         ) {
             items(chatMessages) { message ->
                 ChatBubble(message)
+            }
+            
+            if (isTyping) {
+                item {
+                    Box(modifier = Modifier.padding(8.dp)) {
+                        Text("AI is thinking...", color = Color.Gray, fontSize = 12.sp)
+                    }
+                }
             }
         }
 
@@ -86,17 +102,15 @@ fun ProjectChatScreen(
             IconButton(
                 onClick = {
                     if (query.isNotBlank()) {
-                        val userQuery = query
-                        chatMessages.add(ChatMessage(userQuery, true))
+                        viewModel.sendMessage(codeContext, query)
                         query = ""
-                        
-                        scope.launch {
-                            val aiResponse = aiService.askProjectChat(codeContext, userQuery)
-                            chatMessages.add(ChatMessage(aiResponse, false))
-                        }
                     }
                 },
-                modifier = Modifier.background(NeonIndigo, RoundedCornerShape(12.dp))
+                enabled = !isTyping,
+                modifier = Modifier.background(
+                    if (isTyping) Color.DarkGray else NeonIndigo, 
+                    RoundedCornerShape(12.dp)
+                )
             ) {
                 Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White)
             }

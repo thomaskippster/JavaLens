@@ -6,6 +6,7 @@ import com.javalens.app.domain.ai.LocalAiService
 import com.javalens.app.domain.repository.SnippetRepository
 import com.javalens.app.viewmodel.ScannerViewModel
 import com.javalens.app.viewmodel.VideoImportViewModel
+import com.javalens.app.viewmodel.ProjectChatViewModel
 import com.javalens.app.domain.video.VideoCodeExtractor
 import com.javalens.app.domain.export.GitHubApi
 import com.javalens.app.domain.export.GitHubExporter
@@ -49,6 +50,7 @@ val appModule = module {
     // ViewModels
     viewModel { ScannerViewModel(get()) }
     viewModel { VideoImportViewModel(get()) }
+    viewModel { ProjectChatViewModel(get()) }
     
     // Workers
     worker { GitHubSyncWorker(get(), get(), get(), get()) }

@@ -29,6 +29,10 @@ class SnippetRepository(
     suspend fun generateMetadata(code: String): SnippetMetadata {
         return aiService.generateSnippetMetadata(code)
     }
+    
+    suspend fun askAiQuestion(context: String, question: String): String {
+        return aiService.askProjectChat(context, question)
+    }
 
     suspend fun isAiAvailable(): Boolean {
         return aiService.isAvailable()

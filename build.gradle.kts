@@ -6,4 +6,5 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.spotless) apply false
+    alias(libs.plugins.sentry.android) apply false
 }

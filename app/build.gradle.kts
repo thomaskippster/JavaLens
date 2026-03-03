@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.spotless)
+    alias(libs.plugins.sentry.android)
 }
 
 android {
@@ -70,7 +71,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime-ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.security.crypto)
-    implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.kotlinx.coroutines.play-services)
     
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
@@ -86,6 +87,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     androidTestImplementation(libs.mockk.android)
     
-    // Logging
+    // Logging & Error Tracking
     implementation(libs.timber)
+    implementation(libs.sentry.android)
 }

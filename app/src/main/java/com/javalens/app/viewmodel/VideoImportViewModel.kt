@@ -8,11 +8,13 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.javalens.app.domain.logic.CodeStitcher
 import com.javalens.app.domain.logic.FileSplitter
+import com.javalens.app.domain.video.ExtractionEvent
 import com.javalens.app.domain.video.VideoCodeExtractor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 
 class VideoImportViewModel(
     private val videoExtractor: VideoCodeExtractor,
@@ -37,27 +39,32 @@ class VideoImportViewModel(
             _progress.value = 0f
             _extractedCode.value = ""
             
-            // Annahme: Wir kennen die ungefähre Frame-Anzahl oder berechnen sie
-            var processedFrames = 0
-            
-            videoExtractor.extractFrames(videoUri).collect { bitmap ->
-                processedFrames++
-                // Beispielhafte Fortschrittsberechnung (muss an Video-Dauer angepasst werden)
-                _progress.value = (processedFrames % 100) / 100f 
-                
-                val image = InputImage.fromBitmap(bitmap, 0)
-                try {
-                    val visionText = recognizer.process(image).await()
-                    if (visionText.text.isNotBlank()) {
-                        val stitched = stitcher.stitch(_extractedCode.value, visionText.text)
-                        _extractedCode.value = stitched
+            try {
+                videoExtractor.extractFrames(videoUri).collect { event ->
+                    when (event) {
+                        is ExtractionEvent.Progress -> {
+                            _progress.value = event.progress
+                        }
+                        is ExtractionEvent.Frame -> {
+                            val image = InputImage.fromBitmap(event.bitmap, 0)
+                            try {
+                                val visionText = recognizer.process(image).await()
+                                if (visionText.text.isNotBlank()) {
+                                    val stitched = stitcher.stitch(_extractedCode.value, visionText.text)
+                                    _extractedCode.value = stitched
+                                }
+                            } catch (e: Exception) {
+                                Timber.e(e, "Error during OCR on frame")
+                            }
+                        }
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
                 }
+            } catch (e: Exception) {
+                Timber.e(e, "Error extracting frames from video")
+            } finally {
+                _progress.value = 1f
+                _isParsing.value = false
             }
-            _progress.value = 1f
-            _isParsing.value = false
         }
     }
 }

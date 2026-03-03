@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.javalens.app.domain.model.Resource
 import com.javalens.app.domain.utils.ClipboardUtils
 import com.javalens.app.ui.components.CameraPreviewView
 import com.javalens.app.ui.components.CyberBodyButton
@@ -38,136 +39,148 @@ fun ScannerScreen(
     val isScanning by viewModel.isScanning.collectAsState()
     val scannedCode by viewModel.currentScannedCode.collectAsState()
     val fileName by viewModel.detectedFileName.collectAsState()
-    val isProcessingAi by viewModel.isProcessingAi.collectAsState()
+    val aiProcessState by viewModel.aiProcessState.collectAsState()
+    
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Box(modifier = Modifier.fillMaxSize().background(CyberBlack)) {
-        
-        // 1. Live Camera Feed
-        CameraPreviewView(
-            isScanningActive = isScanning,
-            onTextExtracted = { text -> 
-                viewModel.onNewFrameReceived(text) 
-            }
-        )
-        
-        // 2. AR Overlay: Code Preview (Neon Emerald Glow)
-        AnimatedVisibility(
-            visible = scannedCode.isNotEmpty(),
-            enter = fadeIn() + slideInVertically(),
-            exit = fadeOut()
-        ) {
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(32.dp)
-                    .fillMaxWidth()
-                    .heightIn(max = 250.dp),
-                color = CyberSlate.copy(alpha = 0.85f),
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, NeonIndigo.copy(alpha = 0.4f))
+    // Error handling with Snackbar
+    LaunchedEffect(aiProcessState) {
+        if (aiProcessState is Resource.Error) {
+            snackbarHostState.showSnackbar((aiProcessState as Resource.Error).message)
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = Color.Transparent
+    ) { padding ->
+        Box(modifier = Modifier.fillMaxSize().background(CyberBlack).padding(padding)) {
+            
+            // 1. Live Camera Feed
+            CameraPreviewView(
+                isScanningActive = isScanning,
+                onTextExtracted = { text -> 
+                    viewModel.onNewFrameReceived(text) 
+                }
+            )
+            
+            // 2. AR Overlay: Code Preview
+            AnimatedVisibility(
+                visible = scannedCode.isNotEmpty(),
+                enter = fadeIn() + slideInVertically(),
+                exit = fadeOut()
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "FILE: $fileName",
-                            color = Color.White,
-                            fontSize = 10.sp
-                        )
-                        IconButton(
-                            onClick = { ClipboardUtils.copyToClipboard(context, scannedCode) },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ContentCopy,
-                                contentDescription = "Copy",
-                                tint = NeonIndigo,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = scannedCode,
-                        color = NeonEmerald,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 11.sp,
-                        modifier = Modifier.verticalScroll(rememberScrollState())
-                    )
-                    
-                    // Suggestion: Trigger AI Fix here if not scanning
-                    if (!isScanning && scannedCode.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = { viewModel.fixCodeWithAi() },
-                            colors = ButtonDefaults.buttonColors(containerColor = NeonIndigo),
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(32.dp)
+                        .fillMaxWidth()
+                        .heightIn(max = 250.dp),
+                    color = CyberSlate.copy(alpha = 0.85f),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, NeonIndigo.copy(alpha = 0.4f))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp)
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Default.AutoFixHigh, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("MAGIC FIX (AI)")
+                            Text(
+                                text = "FILE: $fileName",
+                                color = Color.White,
+                                fontSize = 10.sp
+                            )
+                            IconButton(
+                                onClick = { ClipboardUtils.copyToClipboard(context, scannedCode) },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = "Copy",
+                                    tint = NeonIndigo,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = scannedCode,
+                            color = NeonEmerald,
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 11.sp,
+                            modifier = Modifier.verticalScroll(rememberScrollState())
+                        )
+                        
+                        if (!isScanning && scannedCode.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { viewModel.fixCodeWithAi() },
+                                colors = ButtonDefaults.buttonColors(containerColor = NeonIndigo),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp),
+                                enabled = aiProcessState !is Resource.Loading
+                            ) {
+                                Icon(Icons.Default.AutoFixHigh, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text("MAGIC FIX (AI)")
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // 3. AI Processing Feedback (Tensor Engine Warning)
-        if (isProcessingAi) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(color = NeonIndigo)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "GEMINI NANO REPAIRING CODE...",
-                        color = NeonIndigo,
-                        fontSize = 12.sp,
-                        style = MaterialTheme.typography.labelMedium
-                    )
+            // 3. AI Processing Feedback (Resource.Loading)
+            if (aiProcessState is Resource.Loading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.7f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = NeonIndigo)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "GEMINI NANO REPAIRING CODE...",
+                            color = NeonIndigo,
+                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
                 }
             }
-        }
 
-        // 4. Action Bar (Bottom Hub)
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 48.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(32.dp)
+            // 4. Action Bar
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 48.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Clear Button
-                IconButton(
-                    onClick = { viewModel.clearSession() },
-                    modifier = Modifier.background(CyberSlate, CircleShape)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(32.dp)
                 ) {
-                    Icon(Icons.Default.Delete, "Clear", tint = Color.Gray)
-                }
+                    IconButton(
+                        onClick = { viewModel.clearSession() },
+                        modifier = Modifier.background(CyberSlate, CircleShape)
+                    ) {
+                        Icon(Icons.Default.Delete, "Clear", tint = Color.Gray)
+                    }
 
-                // Main Scan Button
-                CyberBodyButton(
-                    isScanning = isScanning,
-                    onClick = { viewModel.toggleScan() }
-                )
+                    CyberBodyButton(
+                        isScanning = isScanning,
+                        onClick = { viewModel.toggleScan() }
+                    )
 
-                // Magic Fix & Save Button (IconButton as secondary)
-                IconButton(
-                    onClick = { viewModel.fixCodeWithAi() },
-                    modifier = Modifier.background(CyberSlate, CircleShape)
-                ) {
-                    Icon(Icons.Default.AutoFixHigh, "Magic Fix", tint = NeonIndigo)
+                    IconButton(
+                        onClick = { viewModel.fixCodeWithAi() },
+                        modifier = Modifier.background(CyberSlate, CircleShape),
+                        enabled = aiProcessState !is Resource.Loading
+                    ) {
+                        Icon(Icons.Default.AutoFixHigh, "Magic Fix", tint = NeonIndigo)
+                    }
                 }
             }
         }

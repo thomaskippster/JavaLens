@@ -1,25 +1,22 @@
 package com.javalens.app.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.javalens.app.data.SnippetDao
 import com.javalens.app.data.SnippetEntity
 import com.javalens.app.domain.ai.AiDownloadStatus
-import com.javalens.app.domain.ai.LocalAiService
 import com.javalens.app.domain.logic.CodeStitcher
 import com.javalens.app.domain.logic.FileSplitter
+import com.javalens.app.domain.model.Resource
+import com.javalens.app.domain.repository.SnippetRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ScannerViewModel(
-    application: Application,
-    private val snippetDao: SnippetDao
-) : AndroidViewModel(application) {
+    private val repository: SnippetRepository
+) : ViewModel() {
 
-    private val aiService = LocalAiService(application.applicationContext)
     private val codeStitcher = CodeStitcher()
     private val fileSplitter = FileSplitter()
 
@@ -32,11 +29,10 @@ class ScannerViewModel(
     private val _detectedFileName = MutableStateFlow("Scanning...")
     val detectedFileName: StateFlow<String> = _detectedFileName.asStateFlow()
 
-    private val _isProcessingAi = MutableStateFlow(false)
-    val isProcessingAi: StateFlow<Boolean> = _isProcessingAi.asStateFlow()
+    private val _aiProcessState = MutableStateFlow<Resource<String>>(Resource.Idle)
+    val aiProcessState: StateFlow<Resource<String>> = _aiProcessState.asStateFlow()
 
-    // Expose detailed download status for the UI
-    val downloadStatus: StateFlow<AiDownloadStatus> = aiService.downloadStatus
+    val downloadStatus: StateFlow<AiDownloadStatus> = repository.aiDownloadStatus
 
     private val _isAiAvailable = MutableStateFlow<Boolean?>(null)
     val isAiAvailable: StateFlow<Boolean?> = _isAiAvailable.asStateFlow()
@@ -47,7 +43,7 @@ class ScannerViewModel(
 
     fun checkAiStatus() {
         viewModelScope.launch {
-            _isAiAvailable.value = aiService.isAvailable()
+            _isAiAvailable.value = repository.isAiAvailable()
         }
     }
 
@@ -56,7 +52,7 @@ class ScannerViewModel(
     }
 
     fun onNewFrameReceived(newText: String) {
-        if (!_isScanning.value || _isProcessingAi.value) return
+        if (!_isScanning.value || _aiProcessState.value is Resource.Loading) return
 
         viewModelScope.launch {
             val stitchedCode = codeStitcher.stitch(_currentScannedCode.value, newText)
@@ -69,41 +65,39 @@ class ScannerViewModel(
         }
     }
 
-    /**
-     * Alias for magicFixAndSave to align with suggested naming
-     */
     fun fixCodeWithAi() {
         magicFixAndSave()
     }
 
-    /**
-     * Triggers Gemini Nano to fix OCR errors and save the snippet with metadata.
-     */
     fun magicFixAndSave() {
         val rawCode = _currentScannedCode.value
         if (rawCode.isBlank()) return
 
         viewModelScope.launch {
-            _isProcessingAi.value = true
-            _isScanning.value = false // Stop scanning during AI processing
+            _aiProcessState.value = Resource.Loading
+            _isScanning.value = false
 
-            // 1. Gemini Nano: Syntax Repair
-            val fixedCode = aiService.magicOcrFix(rawCode)
+            try {
+                // 1. Gemini Nano: Syntax Repair
+                val fixedCode = repository.fixCode(rawCode)
 
-            // 2. Gemini Nano: Metadata Generation (Title, Category, Desc)
-            val metadata = aiService.generateSnippetMetadata(fixedCode)
+                // 2. Gemini Nano: Metadata Generation
+                val metadata = repository.generateMetadata(fixedCode)
 
-            // 3. Room: Persistent Storage
-            val newSnippet = SnippetEntity(
-                title = metadata.title,
-                category = metadata.category,
-                description = metadata.description,
-                codeContent = fixedCode
-            )
-            snippetDao.insertSnippet(newSnippet)
+                // 3. Room: Persistent Storage
+                val newSnippet = SnippetEntity(
+                    title = metadata.title,
+                    category = metadata.category,
+                    description = metadata.description,
+                    codeContent = fixedCode
+                )
+                repository.insertSnippet(newSnippet)
 
-            _currentScannedCode.value = fixedCode
-            _isProcessingAi.value = false
+                _currentScannedCode.value = fixedCode
+                _aiProcessState.value = Resource.Success(fixedCode)
+            } catch (e: Exception) {
+                _aiProcessState.value = Resource.Error(e.message ?: "Unknown AI Error")
+            }
         }
     }
 
@@ -111,6 +105,6 @@ class ScannerViewModel(
         _currentScannedCode.value = ""
         _detectedFileName.value = "Ready to scan"
         _isScanning.value = false
-        _isProcessingAi.value = false
+        _aiProcessState.value = Resource.Idle
     }
 }

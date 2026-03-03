@@ -1,9 +1,6 @@
 package com.javalens.app.ui.navigation
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -47,6 +44,9 @@ fun AppNavigation(
     val context = LocalContext.current
     val repository: SnippetRepository = koinInject()
     
+    // We can use a state to pass the code context from Detail to Chat
+    var activeChatContext by remember { mutableStateOf("") }
+    
     // GitHub Logic Setup
     val githubApi = remember {
         Retrofit.Builder()
@@ -64,7 +64,10 @@ fun AppNavigation(
                 aiStatus = aiStatus,
                 onScanClick = { navController.navigate(Screen.Scanner.route) },
                 onVaultClick = { navController.navigate(Screen.Vault.route) },
-                onChatClick = { navController.navigate(Screen.Chat.route) },
+                onChatClick = { 
+                    activeChatContext = "" // Reset context when coming from Hub
+                    navController.navigate(Screen.Chat.route) 
+                },
                 onVideoClick = { navController.navigate(Screen.VideoImport.route) },
                 onGitHubClick = { navController.navigate(Screen.GitHub.route) }
             )
@@ -88,14 +91,21 @@ fun AppNavigation(
             SnippetDetailScreen(
                 snippetId = id,
                 repository = repository,
+                onChatWithSnippet = { code ->
+                    activeChatContext = code
+                    navController.navigate(Screen.Chat.route)
+                },
                 onBack = { navController.popBackStack() }
             )
         }
         composable(Screen.Chat.route) { 
-            val codeContext by scannerViewModel.currentScannedCode.collectAsState()
+            val liveScannerCode by scannerViewModel.currentScannedCode.collectAsState()
+            // If activeChatContext is set (from Detail), use it. Otherwise use Live Scanner code.
+            val finalContext = if (activeChatContext.isNotEmpty()) activeChatContext else liveScannerCode
+            
             val chatViewModel: ProjectChatViewModel = koinViewModel()
             ProjectChatScreen(
-                codeContext = codeContext,
+                codeContext = finalContext,
                 viewModel = chatViewModel
             ) 
         }

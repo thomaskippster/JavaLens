@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
@@ -34,6 +35,7 @@ import kotlinx.coroutines.launch
 fun SnippetDetailScreen(
     snippetId: Long,
     repository: SnippetRepository,
+    onChatWithSnippet: (String) -> Unit = {},
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -50,16 +52,13 @@ fun SnippetDetailScreen(
                     }
                 },
                 actions = {
-                    // Delete Button
+                    // Chat Button
                     IconButton(onClick = {
-                        scope.launch {
-                            repository.deleteSnippetById(snippetId)
-                            onBack()
-                        }
+                        snippet?.let { onChatWithSnippet(it.codeContent) }
                     }) {
-                        Icon(Icons.Default.Delete, "Delete", tint = Color.Red)
+                        Icon(Icons.Default.Chat, "Ask AI", tint = NeonIndigo)
                     }
-                    
+
                     // Share Button
                     IconButton(onClick = {
                         snippet?.let {
@@ -71,7 +70,17 @@ fun SnippetDetailScreen(
                             context.startActivity(Intent.createChooser(shareIntent, "Share Code via"))
                         }
                     }) {
-                        Icon(Icons.Default.Share, "Share", tint = NeonIndigo)
+                        Icon(Icons.Default.Share, "Share", tint = Color.Gray)
+                    }
+
+                    // Delete Button
+                    IconButton(onClick = {
+                        scope.launch {
+                            repository.deleteSnippetById(snippetId)
+                            onBack()
+                        }
+                    }) {
+                        Icon(Icons.Default.Delete, "Delete", tint = Color.Red)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = CyberBlack)

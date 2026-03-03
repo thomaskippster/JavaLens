@@ -22,13 +22,11 @@ class CodeStitcher {
             if (suffix == prefix) {
                 // Overlap found: drop the overlapping lines from the new frame
                 val uniqueNewContent = newLines.drop(overlapSize)
-                return (existingLines + uniqueNewContent).joinToString("
-")
+                return (existingLines + uniqueNewContent).joinToString("\n")
             }
         }
 
         // Fallback: No clean overlap found, append with a newline
-        return existingCode + "
-" + newFrame
+        return existingCode + "\n" + newFrame
     }
 }

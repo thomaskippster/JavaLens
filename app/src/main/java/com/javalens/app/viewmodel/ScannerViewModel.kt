@@ -1,6 +1,7 @@
 package com.javalens.app.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.javalens.app.data.SnippetDao
 import com.javalens.app.data.SnippetEntity
@@ -13,11 +14,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ScannerViewModel(
-    private val snippetDao: SnippetDao,
-    private val aiService: LocalAiService = LocalAiService(),
-    private val codeStitcher: CodeStitcher = CodeStitcher(),
-    private val fileSplitter: FileSplitter = FileSplitter()
-) : ViewModel() {
+    application: Application,
+    private val snippetDao: SnippetDao
+) : AndroidViewModel(application) {
+
+    private val aiService = LocalAiService(application.applicationContext)
+    private val codeStitcher = CodeStitcher()
+    private val fileSplitter = FileSplitter()
 
     private val _isScanning = MutableStateFlow(false)
     val isScanning: StateFlow<Boolean> = _isScanning.asStateFlow()

@@ -15,5 +15,5 @@ interface SnippetDao {
     fun getSnippetsByCategory(category: String): Flow<List<SnippetEntity>>
 
     @Delete
-    suspend fun deleteSnippet(snippet: SnippetEntity)
+    suspend fun deleteSnippet(snippet: SnippetEntity): Int
 }

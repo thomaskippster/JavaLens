@@ -12,6 +12,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
 import com.javalens.app.data.AppDatabase
 import com.javalens.app.domain.video.VideoCodeExtractor
@@ -44,13 +47,18 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.Black
                 ) {
-                    // Initialisierung der ViewModels
-                    val scannerViewModel = remember { ScannerViewModel(db.snippetDao()) }
+                    val scannerViewModel: ScannerViewModel = viewModel(
+                        factory = object : ViewModelProvider.Factory {
+                            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                                return ScannerViewModel(application, db.snippetDao()) as T
+                            }
+                        }
+                    )
+                    
                     val videoViewModel = remember { VideoImportViewModel(VideoCodeExtractor(applicationContext)) }
                     
                     val snippets by db.snippetDao().getAllSnippets().collectAsState(initial = emptyList())
                     
-                    // AppNavigation mit allen ViewModels und Daten versorgen
                     AppNavigation(
                         scannerViewModel = scannerViewModel,
                         videoViewModel = videoViewModel,

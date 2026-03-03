@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.javalens.app.domain.ai.LocalAiService
 import com.javalens.app.domain.export.GitHubApi
 import com.javalens.app.domain.export.GitHubExporter
 import com.javalens.app.ui.screens.*
@@ -60,7 +61,10 @@ fun AppNavigation(
         composable(Screen.Vault.route) { SnippetLibraryScreen(snippets = vaultSnippets, onBack = { navController.popBackStack() }) }
         composable(Screen.Chat.route) { 
             val codeContext by scannerViewModel.currentScannedCode.collectAsState()
-            ProjectChatScreen(codeContext = codeContext) 
+            ProjectChatScreen(
+                codeContext = codeContext,
+                aiService = remember { LocalAiService(context) }
+            ) 
         }
         composable(Screen.VideoImport.route) { 
             VideoImportScreen(viewModel = videoViewModel, onBack = { navController.popBackStack() }) 

@@ -2,7 +2,7 @@ package com.javalens.app.domain.export
 
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
+import androidx.security.crypto.MasterKey
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -28,12 +28,14 @@ data class GitHubFileRequest(
 
 class GitHubExporter(private val context: Context, private val api: GitHubApi) {
 
-    private val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+    private val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
     
     private val secureStorage = EncryptedSharedPreferences.create(
-        "github_secrets",
-        masterKeyAlias,
         context,
+        "github_secrets",
+        masterKey,
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )

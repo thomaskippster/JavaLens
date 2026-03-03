@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,7 +27,7 @@ data class ChatMessage(val text: String, val isUser: Boolean)
 @Composable
 fun ProjectChatScreen(
     codeContext: String,
-    aiService: LocalAiService = remember { LocalAiService() }
+    aiService: LocalAiService
 ) {
     var query by remember { mutableStateOf("") }
     val chatMessages = remember { mutableStateListOf<ChatMessage>() }
@@ -98,7 +98,7 @@ fun ProjectChatScreen(
                 },
                 modifier = Modifier.background(NeonIndigo, RoundedCornerShape(12.dp))
             ) {
-                Icon(Icons.Default.Send, contentDescription = "Send", tint = Color.White)
+                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White)
             }
         }
     }

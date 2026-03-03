@@ -22,7 +22,7 @@ class VideoCodeExtractor(private val context: Context) {
 
             var currentIndex = 0
             while (currentIndex < totalFrames) {
-                val frames = retriever.getFramesAtIndex(currentIndex, 1, MediaMetadataRetriever.BITMAP_CONTROL_DEFAULT)
+                val frames = retriever.getFramesAtIndex(currentIndex, 1)
                 if (!frames.isNullOrEmpty()) emit(frames[0])
                 currentIndex += framesToSkip
             }

@@ -5,6 +5,7 @@ import com.google.ai.edge.aicore.DownloadCallback
 import com.google.ai.edge.aicore.DownloadConfig
 import com.google.ai.edge.aicore.GenerativeModel
 import com.google.ai.edge.aicore.GenerationConfig
+import com.google.ai.edge.aicore.GenerativeAIException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,15 +30,13 @@ class LocalAiService(private val context: Context) {
 
         override fun onDownloadProgress(totalBytesDownloaded: Long) {
             _downloadStatus.value = AiDownloadStatus.DOWNLOADING
-            // Wir wissen die Gesamtgröße hier nicht direkt im Progress, 
-            // aber wir setzen den Status auf DOWNLOADING
         }
 
         override fun onDownloadCompleted() {
             _downloadStatus.value = AiDownloadStatus.COMPLETED
         }
 
-        override fun onDownloadFailed(failureStatus: String, e: Throwable) {
+        override fun onDownloadFailed(failureStatus: String, e: GenerativeAIException) {
             _downloadStatus.value = AiDownloadStatus.FAILED
         }
 
@@ -98,5 +97,3 @@ class LocalAiService(private val context: Context) {
         }
     }
 }
-
-data class SnippetMetadata(val title: String, val category: String, val description: String)

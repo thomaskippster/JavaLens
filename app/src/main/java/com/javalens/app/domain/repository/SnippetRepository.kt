@@ -17,6 +17,10 @@ class SnippetRepository(
     suspend fun insertSnippet(snippet: SnippetEntity) {
         snippetDao.insertSnippet(snippet)
     }
+    
+    suspend fun deleteSnippetById(id: Long) {
+        snippetDao.deleteSnippetById(id)
+    }
 
     suspend fun fixCode(rawCode: String): String {
         return aiService.magicOcrFix(rawCode)

@@ -22,4 +22,7 @@ interface SnippetDao {
 
     @Delete
     suspend fun deleteSnippet(snippet: SnippetEntity): Int
+    
+    @Query("DELETE FROM snippet_vault WHERE id = :id")
+    suspend fun deleteSnippetById(id: Long): Int
 }

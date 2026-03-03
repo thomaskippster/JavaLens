@@ -1,5 +1,6 @@
 package com.javalens.app.ui.screens
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,6 +9,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +27,7 @@ import com.javalens.app.ui.theme.CyberBlack
 import com.javalens.app.ui.theme.CyberSlate
 import com.javalens.app.ui.theme.NeonEmerald
 import com.javalens.app.ui.theme.NeonIndigo
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,6 +37,7 @@ fun SnippetDetailScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val snippet by repository.getSnippetById(snippetId).collectAsState(initial = null)
 
     Scaffold(
@@ -42,6 +47,31 @@ fun SnippetDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.White)
+                    }
+                },
+                actions = {
+                    // Delete Button
+                    IconButton(onClick = {
+                        scope.launch {
+                            repository.deleteSnippetById(snippetId)
+                            onBack()
+                        }
+                    }) {
+                        Icon(Icons.Default.Delete, "Delete", tint = Color.Red)
+                    }
+                    
+                    // Share Button
+                    IconButton(onClick = {
+                        snippet?.let {
+                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_SUBJECT, it.title)
+                                putExtra(Intent.EXTRA_TEXT, it.codeContent)
+                            }
+                            context.startActivity(Intent.createChooser(shareIntent, "Share Code via"))
+                        }
+                    }) {
+                        Icon(Icons.Default.Share, "Share", tint = NeonIndigo)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = CyberBlack)

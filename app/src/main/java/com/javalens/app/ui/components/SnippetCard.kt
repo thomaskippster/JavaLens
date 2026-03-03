@@ -4,16 +4,20 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.javalens.app.data.SnippetEntity
+import com.javalens.app.domain.utils.ClipboardUtils
 import com.javalens.app.ui.theme.CyberBlack
 import com.javalens.app.ui.theme.CyberSlate
 import com.javalens.app.ui.theme.NeonEmerald
@@ -21,6 +25,7 @@ import com.javalens.app.ui.theme.NeonIndigo
 
 @Composable
 fun SnippetCard(snippet: SnippetEntity) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,6 +79,17 @@ fun SnippetCard(snippet: SnippetEntity) {
                     fontFamily = FontFamily.Monospace,
                     fontSize = 10.sp,
                     color = NeonEmerald
+                )
+            }
+            
+            IconButton(
+                onClick = { ClipboardUtils.copyToClipboard(context, snippet.codeContent) },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ContentCopy,
+                    contentDescription = "Kopieren",
+                    tint = NeonIndigo
                 )
             }
         }

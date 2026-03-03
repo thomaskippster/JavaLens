@@ -34,9 +34,17 @@ class VideoImportViewModel(
     fun parseVideo(videoUri: Uri) {
         viewModelScope.launch {
             _isParsing.value = true
+            _progress.value = 0f
             _extractedCode.value = ""
             
+            // Annahme: Wir kennen die ungefähre Frame-Anzahl oder berechnen sie
+            var processedFrames = 0
+            
             videoExtractor.extractFrames(videoUri).collect { bitmap ->
+                processedFrames++
+                // Beispielhafte Fortschrittsberechnung (muss an Video-Dauer angepasst werden)
+                _progress.value = (processedFrames % 100) / 100f 
+                
                 val image = InputImage.fromBitmap(bitmap, 0)
                 try {
                     val visionText = recognizer.process(image).await()
@@ -48,6 +56,7 @@ class VideoImportViewModel(
                     e.printStackTrace()
                 }
             }
+            _progress.value = 1f
             _isParsing.value = false
         }
     }

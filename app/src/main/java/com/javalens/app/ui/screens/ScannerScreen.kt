@@ -10,15 +10,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.javalens.app.domain.utils.ClipboardUtils
 import com.javalens.app.ui.components.CameraPreviewView
 import com.javalens.app.ui.components.CyberBodyButton
 import com.javalens.app.ui.theme.CyberBlack
@@ -31,6 +34,7 @@ import com.javalens.app.viewmodel.ScannerViewModel
 fun ScannerScreen(
     viewModel: ScannerViewModel
 ) {
+    val context = LocalContext.current
     val isScanning by viewModel.isScanning.collectAsState()
     val scannedCode by viewModel.currentScannedCode.collectAsState()
     val fileName by viewModel.detectedFileName.collectAsState()
@@ -63,12 +67,29 @@ fun ScannerScreen(
                 border = BorderStroke(1.dp, NeonIndigo.copy(alpha = 0.4f))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "FILE: $fileName",
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "FILE: $fileName",
+                            color = Color.White,
+                            fontSize = 10.sp
+                        )
+                        IconButton(
+                            onClick = { ClipboardUtils.copyToClipboard(context, scannedCode) },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ContentCopy,
+                                contentDescription = "Copy",
+                                tint = NeonIndigo,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = scannedCode,
                         color = NeonEmerald,

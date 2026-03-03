@@ -12,13 +12,17 @@ import timber.log.Timber
 class JavaLensApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+
+        // Initialize Koin FIRST to ensure WorkManager is initialized by Koin
+        startKoin {
+            androidLogger()
+            androidContext(this@JavaLensApplication)
+            workManagerFactory()
+            modules(appModule)
+        }
         
         // Initialize Sentry for error tracking
         SentryAndroid.init(this) { options ->
-            // Der DSN wird normalerweise in der AndroidManifest.xml oder sentry.properties konfiguriert.
-            // Er kann aber auch hier explizit gesetzt werden:
-            // options.dsn = "DEIN_SENTRY_DSN_HIER"
-            
             options.isEnableAutoSessionTracking = true
             options.isEnableUserInteractionTracing = true
             options.isEnableUserInteractionBreadcrumbs = true
@@ -27,13 +31,6 @@ class JavaLensApplication : Application() {
         // Initialize Timber for logging
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
-        }
-        
-        startKoin {
-            androidLogger()
-            androidContext(this@JavaLensApplication)
-            workManagerFactory()
-            modules(appModule)
         }
     }
 }

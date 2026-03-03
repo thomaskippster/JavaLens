@@ -45,11 +45,15 @@ class LocalAiService(private val context: Context) {
         }
     }
 
-    // Initialisierung des Gemini Nano Modells über AICore mit DownloadConfig
-    private val generativeModel = GenerativeModel(
-        generationConfig = GenerationConfig.builder().build(),
-        downloadConfig = DownloadConfig(downloadCallback)
-    )
+    // Gemini Nano requires context. In this early SDK version, 
+    // it might be passed via the builder or a static init.
+    private val generativeModel by lazy {
+        GenerativeModel(
+            generationConfig = GenerationConfig.builder()
+                .build(),
+            downloadConfig = DownloadConfig(downloadCallback)
+        )
+    }
 
     suspend fun isAvailable(): Boolean = withContext(Dispatchers.IO) {
         // In der Praxis prüfen wir hier gegen den aktuellen Status

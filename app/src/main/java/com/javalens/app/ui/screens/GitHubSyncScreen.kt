@@ -101,6 +101,21 @@ fun GitHubSyncScreen(
             )
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = commitMsg,
+            onValueChange = { commitMsg = it },
+            label = { Text("Commit Message", color = Color.Gray) },
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = NeonIndigo,
+                unfocusedBorderColor = CyberSlate,
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White
+            )
+        )
+
         Spacer(modifier = Modifier.height(32.dp))
 
         val isRunning = currentWorkInfo?.state == WorkInfo.State.RUNNING

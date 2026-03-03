@@ -21,13 +21,14 @@ import com.javalens.app.ui.theme.CyberBlack
 import com.javalens.app.ui.theme.CyberSlate
 import com.javalens.app.ui.theme.NeonEmerald
 import com.javalens.app.ui.theme.NeonIndigo
+import kotlinx.collections.immutable.ImmutableList
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GitHubSyncScreen(
     exporter: GitHubExporter,
-    snippets: List<com.javalens.app.data.SnippetEntity>,
+    snippets: ImmutableList<com.javalens.app.data.SnippetEntity>,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current

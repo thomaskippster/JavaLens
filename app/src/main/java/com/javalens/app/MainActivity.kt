@@ -18,6 +18,7 @@ import com.javalens.app.ui.navigation.AppNavigation
 import com.javalens.app.ui.theme.JavaLensTheme
 import com.javalens.app.viewmodel.ScannerViewModel
 import com.javalens.app.viewmodel.VideoImportViewModel
+import kotlinx.collections.immutable.toImmutableList
 import org.koin.android.ext.android.inject
 import org.koin.androidx.compose.koinViewModel
 
@@ -48,7 +49,7 @@ class MainActivity : ComponentActivity() {
                     AppNavigation(
                         scannerViewModel = scannerViewModel,
                         videoViewModel = videoViewModel,
-                        vaultSnippets = snippets
+                        vaultSnippets = snippets.toImmutableList()
                     )
                 }
             }

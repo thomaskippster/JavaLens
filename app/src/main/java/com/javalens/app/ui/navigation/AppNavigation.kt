@@ -14,6 +14,7 @@ import com.javalens.app.domain.export.GitHubExporter
 import com.javalens.app.ui.screens.*
 import com.javalens.app.viewmodel.ScannerViewModel
 import com.javalens.app.viewmodel.VideoImportViewModel
+import kotlinx.collections.immutable.ImmutableList
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -30,7 +31,7 @@ sealed class Screen(val route: String) {
 fun AppNavigation(
     scannerViewModel: ScannerViewModel,
     videoViewModel: VideoImportViewModel,
-    vaultSnippets: List<com.javalens.app.data.SnippetEntity>
+    vaultSnippets: ImmutableList<com.javalens.app.data.SnippetEntity>
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current

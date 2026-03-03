@@ -40,7 +40,8 @@
             </intent-filter>
         </activity>
         
-        <meta-data android:name="io.sentry.dsn" android:value="YOUR_DSN_HERE" />
+        <!-- Sentry DSN (Leer gelassen, um Abstürze ohne Key zu vermeiden) -->
+        <meta-data android:name="io.sentry.dsn" android:value="" />
     </application>
 
 </manifest>

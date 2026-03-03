@@ -1,6 +1,7 @@
 package com.javalens.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,6 +21,7 @@ import kotlinx.collections.immutable.ImmutableList
 @Composable
 fun SnippetLibraryScreen(
     snippets: ImmutableList<com.javalens.app.data.SnippetEntity>,
+    onSnippetClick: (Long) -> Unit = {},
     onBack: () -> Unit
 ) {
     Scaffold(
@@ -48,7 +50,9 @@ fun SnippetLibraryScreen(
                     .padding(horizontal = 16.dp)
             ) {
                 items(snippets, key = { it.id }) { snippet ->
-                    SnippetCard(snippet = snippet)
+                    Box(modifier = Modifier.clickable { onSnippetClick(snippet.id) }) {
+                        SnippetCard(snippet = snippet)
+                    }
                 }
             }
         }

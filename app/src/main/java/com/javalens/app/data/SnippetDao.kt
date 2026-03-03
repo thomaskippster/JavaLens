@@ -14,6 +14,9 @@ interface SnippetDao {
     @Query("SELECT * FROM snippet_vault ORDER BY timestamp DESC")
     suspend fun getAllSnippetsSync(): List<SnippetEntity>
     
+    @Query("SELECT * FROM snippet_vault WHERE id = :id")
+    fun getSnippetById(id: Long): Flow<SnippetEntity?>
+    
     @Query("SELECT * FROM snippet_vault WHERE category = :category")
     fun getSnippetsByCategory(category: String): Flow<List<SnippetEntity>>
 

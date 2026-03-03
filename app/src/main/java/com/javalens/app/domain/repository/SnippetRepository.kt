@@ -10,9 +10,9 @@ class SnippetRepository(
     private val snippetDao: SnippetDao,
     private val aiService: LocalAiService
 ) {
-    fun getAllSnippets(): Flow<List<SnippetEntity>> {
-        return snippetDao.getAllSnippets()
-    }
+    fun getAllSnippets(): Flow<List<SnippetEntity>> = snippetDao.getAllSnippets()
+    
+    fun getSnippetById(id: Long): Flow<SnippetEntity?> = snippetDao.getSnippetById(id)
 
     suspend fun insertSnippet(snippet: SnippetEntity) {
         snippetDao.insertSnippet(snippet)

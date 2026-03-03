@@ -12,12 +12,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.javalens.app.domain.ai.AiDownloadStatus
 import com.javalens.app.ui.theme.*
 import com.javalens.app.ui.components.HubButton
 
 @Composable
 fun HubScreen(
-    isAiAvailable: Boolean? = null,
+    aiStatus: AiDownloadStatus = AiDownloadStatus.IDLE,
     onScanClick: () -> Unit,
     onVaultClick: () -> Unit,
     onChatClick: () -> Unit,
@@ -31,10 +32,17 @@ fun HubScreen(
         Spacer(modifier = Modifier.height(48.dp))
         Text("JAVALENS", style = MaterialTheme.typography.displayMedium, color = Color.White)
         
+        val statusColor = when (aiStatus) {
+            AiDownloadStatus.COMPLETED -> NeonEmerald
+            AiDownloadStatus.FAILED -> Color.Red
+            AiDownloadStatus.DOWNLOADING, AiDownloadStatus.STARTING -> Color.Yellow
+            else -> Color.Gray
+        }
+        
         Text(
-            text = if (isAiAvailable == true) "AI Engine: ONLINE" else "AI Engine: OFFLINE",
+            text = "AI Engine: ${aiStatus.name}",
             style = MaterialTheme.typography.labelLarge,
-            color = if (isAiAvailable == true) NeonEmerald else Color.Red
+            color = statusColor
         )
 
         Spacer(modifier = Modifier.height(48.dp))

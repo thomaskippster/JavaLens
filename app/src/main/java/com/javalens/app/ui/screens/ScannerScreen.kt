@@ -97,6 +97,21 @@ fun ScannerScreen(
                         fontSize = 11.sp,
                         modifier = Modifier.verticalScroll(rememberScrollState())
                     )
+                    
+                    // Suggestion: Trigger AI Fix here if not scanning
+                    if (!isScanning && scannedCode.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { viewModel.fixCodeWithAi() },
+                            colors = ButtonDefaults.buttonColors(containerColor = NeonIndigo),
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(Icons.Default.AutoFixHigh, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("MAGIC FIX (AI)")
+                        }
+                    }
                 }
             }
         }
@@ -147,9 +162,9 @@ fun ScannerScreen(
                     onClick = { viewModel.toggleScan() }
                 )
 
-                // Magic Fix & Save Button
+                // Magic Fix & Save Button (IconButton as secondary)
                 IconButton(
-                    onClick = { viewModel.magicFixAndSave() },
+                    onClick = { viewModel.fixCodeWithAi() },
                     modifier = Modifier.background(CyberSlate, CircleShape)
                 ) {
                     Icon(Icons.Default.AutoFixHigh, "Magic Fix", tint = NeonIndigo)

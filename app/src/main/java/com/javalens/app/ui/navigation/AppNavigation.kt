@@ -47,9 +47,9 @@ fun AppNavigation(
 
     NavHost(navController = navController, startDestination = Screen.Hub.route) {
         composable(Screen.Hub.route) {
-            val isAiAvailable by scannerViewModel.isAiAvailable.collectAsState()
+            val aiStatus by scannerViewModel.downloadStatus.collectAsState()
             HubScreen(
-                isAiAvailable = isAiAvailable,
+                aiStatus = aiStatus,
                 onScanClick = { navController.navigate(Screen.Scanner.route) },
                 onVaultClick = { navController.navigate(Screen.Vault.route) },
                 onChatClick = { navController.navigate(Screen.Chat.route) },

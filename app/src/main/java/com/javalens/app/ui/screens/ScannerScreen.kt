@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,13 +41,22 @@ fun ScannerScreen(
     val scannedCode by viewModel.currentScannedCode.collectAsState()
     val fileName by viewModel.detectedFileName.collectAsState()
     val aiProcessState by viewModel.aiProcessState.collectAsState()
+    val saveResult by viewModel.saveResult.collectAsState()
     
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Error handling with Snackbar
-    LaunchedEffect(aiProcessState) {
+    // Handle AI and Save results with Snackbar
+    LaunchedEffect(aiProcessState, saveResult) {
         if (aiProcessState is Resource.Error) {
             snackbarHostState.showSnackbar((aiProcessState as Resource.Error).message)
+        }
+        if (saveResult is Resource.Success) {
+            snackbarHostState.showSnackbar("Successfully saved!")
+            viewModel.resetSaveResult()
+        }
+        if (saveResult is Resource.Error) {
+            snackbarHostState.showSnackbar((saveResult as Resource.Error).message)
+            viewModel.resetSaveResult()
         }
     }
 
@@ -114,23 +124,37 @@ fun ScannerScreen(
                         
                         if (!isScanning && scannedCode.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = { viewModel.fixCodeWithAi() },
-                                colors = ButtonDefaults.buttonColors(containerColor = NeonIndigo),
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp),
-                                enabled = aiProcessState !is Resource.Loading
-                            ) {
-                                Icon(Icons.Default.AutoFixHigh, contentDescription = null)
-                                Spacer(Modifier.width(8.dp))
-                                Text("MAGIC FIX (AI)")
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Button(
+                                    onClick = { viewModel.fixCodeWithAi() },
+                                    colors = ButtonDefaults.buttonColors(containerColor = NeonIndigo),
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(8.dp),
+                                    enabled = aiProcessState !is Resource.Loading
+                                ) {
+                                    Icon(Icons.Default.AutoFixHigh, contentDescription = null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("MAGIC FIX")
+                                }
+                                
+                                Button(
+                                    onClick = { viewModel.saveSnippet(scannedCode, fileName) },
+                                    colors = ButtonDefaults.buttonColors(containerColor = NeonEmerald),
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(8.dp),
+                                    enabled = saveResult !is Resource.Loading
+                                ) {
+                                    Icon(Icons.Default.Save, contentDescription = null, tint = Color.Black)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("SAVE", color = Color.Black)
+                                }
                             }
                         }
                     }
                 }
             }
 
-            // 3. AI Processing Feedback (Resource.Loading)
+            // 3. AI Processing Feedback
             if (aiProcessState is Resource.Loading) {
                 Box(
                     modifier = Modifier
@@ -175,11 +199,11 @@ fun ScannerScreen(
                     )
 
                     IconButton(
-                        onClick = { viewModel.fixCodeWithAi() },
+                        onClick = { viewModel.saveSnippet(scannedCode, fileName) },
                         modifier = Modifier.background(CyberSlate, CircleShape),
-                        enabled = aiProcessState !is Resource.Loading
+                        enabled = scannedCode.isNotEmpty() && saveResult !is Resource.Loading
                     ) {
-                        Icon(Icons.Default.AutoFixHigh, "Magic Fix", tint = NeonIndigo)
+                        Icon(Icons.Default.Save, "Save", tint = NeonEmerald)
                     }
                 }
             }

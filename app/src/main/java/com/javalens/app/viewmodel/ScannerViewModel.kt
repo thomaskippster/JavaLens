@@ -33,6 +33,9 @@ class ScannerViewModel(
     private val _aiProcessState = MutableStateFlow<Resource<String>>(Resource.Idle)
     val aiProcessState: StateFlow<Resource<String>> = _aiProcessState.asStateFlow()
 
+    private val _saveResult = MutableStateFlow<Resource<Unit>>(Resource.Idle)
+    val saveResult: StateFlow<Resource<Unit>> = _saveResult.asStateFlow()
+
     val downloadStatus: StateFlow<AiDownloadStatus> = repository.aiDownloadStatus
 
     private val _isAiAvailable = MutableStateFlow<Boolean?>(null)
@@ -90,16 +93,9 @@ class ScannerViewModel(
             Timber.i("Starting AI Magic Fix for code snippet")
 
             try {
-                // 1. Gemini Nano: Syntax Repair
                 val fixedCode = repository.fixCode(rawCode)
-                Timber.v("Original Code: $rawCode")
-                Timber.v("Fixed Code: $fixedCode")
-
-                // 2. Gemini Nano: Metadata Generation
                 val metadata = repository.generateMetadata(fixedCode)
-                Timber.d("Generated Metadata: $metadata")
 
-                // 3. Room: Persistent Storage
                 val newSnippet = SnippetEntity(
                     title = metadata.title,
                     category = metadata.category,
@@ -107,10 +103,11 @@ class ScannerViewModel(
                     codeContent = fixedCode
                 )
                 repository.insertSnippet(newSnippet)
-                Timber.i("Snippet '${metadata.title}' saved successfully")
+                Timber.i("Snippet '${metadata.title}' saved successfully via AI Fix")
 
                 _currentScannedCode.value = fixedCode
                 _aiProcessState.value = Resource.Success(fixedCode)
+                _saveResult.value = Resource.Success(Unit)
             } catch (e: Exception) {
                 Timber.e(e, "Magic Fix failed")
                 _aiProcessState.value = Resource.Error(e.message ?: "Unknown AI Error")
@@ -118,11 +115,38 @@ class ScannerViewModel(
         }
     }
 
+    fun saveSnippet(code: String, title: String) {
+        if (code.isBlank()) return
+        
+        viewModelScope.launch {
+            _saveResult.value = Resource.Loading
+            try {
+                val newSnippet = SnippetEntity(
+                    title = if (title.startsWith("Scanning") || title.isBlank()) "Manual Save" else title,
+                    category = "Manual",
+                    description = "Manually saved snippet",
+                    codeContent = code
+                )
+                repository.insertSnippet(newSnippet)
+                Timber.i("Snippet '$title' saved manually")
+                _saveResult.value = Resource.Success(Unit)
+            } catch (e: Exception) {
+                Timber.e(e, "Manual save failed")
+                _saveResult.value = Resource.Error(e.message ?: "Save Error")
+            }
+        }
+    }
+
+    fun resetSaveResult() {
+        _saveResult.value = Resource.Idle
+    }
+
     fun clearSession() {
         _currentScannedCode.value = ""
         _detectedFileName.value = "Ready to scan"
         _isScanning.value = false
         _aiProcessState.value = Resource.Idle
+        _saveResult.value = Resource.Idle
         Timber.d("Scanner session cleared")
     }
 }

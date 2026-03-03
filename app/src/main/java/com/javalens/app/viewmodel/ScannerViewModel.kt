@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.javalens.app.data.SnippetDao
 import com.javalens.app.data.SnippetEntity
+import com.javalens.app.domain.ai.AiDownloadStatus
 import com.javalens.app.domain.ai.LocalAiService
 import com.javalens.app.domain.logic.CodeStitcher
 import com.javalens.app.domain.logic.FileSplitter
@@ -33,6 +34,9 @@ class ScannerViewModel(
 
     private val _isProcessingAi = MutableStateFlow(false)
     val isProcessingAi: StateFlow<Boolean> = _isProcessingAi.asStateFlow()
+
+    // Expose detailed download status for the UI
+    val downloadStatus: StateFlow<AiDownloadStatus> = aiService.downloadStatus
 
     private val _isAiAvailable = MutableStateFlow<Boolean?>(null)
     val isAiAvailable: StateFlow<Boolean?> = _isAiAvailable.asStateFlow()
@@ -63,6 +67,13 @@ class ScannerViewModel(
                 _detectedFileName.value = fileSplitter.generateFileName(detectedName)
             }
         }
+    }
+
+    /**
+     * Alias for magicFixAndSave to align with suggested naming
+     */
+    fun fixCodeWithAi() {
+        magicFixAndSave()
     }
 
     /**

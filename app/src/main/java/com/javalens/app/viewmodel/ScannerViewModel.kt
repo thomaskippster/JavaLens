@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class ScannerViewModel(
     private val repository: SnippetRepository
@@ -43,12 +44,18 @@ class ScannerViewModel(
 
     fun checkAiStatus() {
         viewModelScope.launch {
-            _isAiAvailable.value = repository.isAiAvailable()
+            try {
+                _isAiAvailable.value = repository.isAiAvailable()
+                Timber.d("AI Availability status: ${_isAiAvailable.value}")
+            } catch (e: Exception) {
+                Timber.e(e, "Error checking AI status")
+            }
         }
     }
 
     fun toggleScan() {
         _isScanning.value = !_isScanning.value
+        Timber.d("Scanning toggled: ${_isScanning.value}")
     }
 
     fun onNewFrameReceived(newText: String) {
@@ -61,6 +68,7 @@ class ScannerViewModel(
             val detectedName = fileSplitter.detectClassName(stitchedCode)
             if (detectedName != null) {
                 _detectedFileName.value = fileSplitter.generateFileName(detectedName)
+                Timber.d("New class detected: $detectedName")
             }
         }
     }
@@ -71,18 +79,25 @@ class ScannerViewModel(
 
     fun magicFixAndSave() {
         val rawCode = _currentScannedCode.value
-        if (rawCode.isBlank()) return
+        if (rawCode.isBlank()) {
+            Timber.w("Magic Fix triggered but scanned code is blank")
+            return
+        }
 
         viewModelScope.launch {
             _aiProcessState.value = Resource.Loading
             _isScanning.value = false
+            Timber.i("Starting AI Magic Fix for code snippet")
 
             try {
                 // 1. Gemini Nano: Syntax Repair
                 val fixedCode = repository.fixCode(rawCode)
+                Timber.v("Original Code: $rawCode")
+                Timber.v("Fixed Code: $fixedCode")
 
                 // 2. Gemini Nano: Metadata Generation
                 val metadata = repository.generateMetadata(fixedCode)
+                Timber.d("Generated Metadata: $metadata")
 
                 // 3. Room: Persistent Storage
                 val newSnippet = SnippetEntity(
@@ -92,10 +107,12 @@ class ScannerViewModel(
                     codeContent = fixedCode
                 )
                 repository.insertSnippet(newSnippet)
+                Timber.i("Snippet '${metadata.title}' saved successfully")
 
                 _currentScannedCode.value = fixedCode
                 _aiProcessState.value = Resource.Success(fixedCode)
             } catch (e: Exception) {
+                Timber.e(e, "Magic Fix failed")
                 _aiProcessState.value = Resource.Error(e.message ?: "Unknown AI Error")
             }
         }
@@ -106,5 +123,6 @@ class ScannerViewModel(
         _detectedFileName.value = "Ready to scan"
         _isScanning.value = false
         _aiProcessState.value = Resource.Idle
+        Timber.d("Scanner session cleared")
     }
 }

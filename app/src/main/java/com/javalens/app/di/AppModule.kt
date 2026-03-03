@@ -7,10 +7,15 @@ import com.javalens.app.domain.repository.SnippetRepository
 import com.javalens.app.viewmodel.ScannerViewModel
 import com.javalens.app.viewmodel.VideoImportViewModel
 import com.javalens.app.domain.video.VideoCodeExtractor
-import org.koin.android.ext.koin.androidApplication
+import com.javalens.app.domain.export.GitHubApi
+import com.javalens.app.domain.export.GitHubExporter
+import com.javalens.app.domain.export.GitHubSyncWorker
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.androidx.workmanager.dsl.worker
 import org.koin.dsl.module
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 val appModule = module {
     // Database
@@ -28,10 +33,23 @@ val appModule = module {
     single { LocalAiService(androidContext()) }
     single { VideoCodeExtractor(androidContext()) }
     
+    // GitHub Logic Setup
+    single {
+        Retrofit.Builder()
+            .baseUrl("https://api.github.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(GitHubApi::class.java)
+    }
+    single { GitHubExporter(androidContext(), get()) }
+    
     // Repository
     single { SnippetRepository(get(), get()) }
     
     // ViewModels
     viewModel { ScannerViewModel(get()) }
     viewModel { VideoImportViewModel(get()) }
+    
+    // Workers
+    worker { GitHubSyncWorker(get(), get(), get(), get()) }
 }

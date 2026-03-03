@@ -1,3 +1,10 @@
+# JavaLens - Proguard / R8 Rules
+
+# Project Specific
+-keep class com.javalens.app.data.** { *; }
+-keep class com.javalens.app.domain.model.** { *; }
+-keep class com.javalens.app.domain.ai.SnippetMetadata { *; }
+
 # Room
 -keep class androidx.room.RoomMasterTable
 -keep class * extends androidx.room.RoomDatabase
@@ -15,7 +22,6 @@
 
 # Gson
 -keep class com.google.gson.** { *; }
--keep class com.javalens.app.data.** { *; }
 
 # Coroutines
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
@@ -24,5 +30,20 @@
     val factory;
 }
 
+# Koin
+-keep class org.koin.** { *; }
+-keepclassmembers class * {
+    @org.koin.core.annotation.* *;
+}
+
+# WorkManager
+-keep class androidx.work.** { *; }
+
+# Timber
+-keep class timber.log.Timber { *; }
+
 # AICore
 -keep class com.google.ai.edge.aicore.** { *; }
+
+# AndroidX Lifecycle
+-keep class androidx.lifecycle.ViewModel { *; }

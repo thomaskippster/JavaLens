@@ -10,15 +10,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.work.*
 import com.javalens.app.domain.export.GitHubExporter
+import com.javalens.app.domain.export.GitHubSyncWorker
 import com.javalens.app.ui.theme.CyberBlack
 import com.javalens.app.ui.theme.CyberSlate
 import com.javalens.app.ui.theme.NeonEmerald
 import com.javalens.app.ui.theme.NeonIndigo
-import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,15 +30,17 @@ fun GitHubSyncScreen(
     snippets: List<com.javalens.app.data.SnippetEntity>,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
     var token by remember { mutableStateOf(exporter.getToken() ?: "") }
     var owner by remember { mutableStateOf("") }
     var repo by remember { mutableStateOf("") }
     var commitMsg by remember { mutableStateOf("Sync via JavaLens Pixel 9") }
     
-    var isSyncing by remember { mutableStateOf(false) }
-    var statusMessage by remember { mutableStateOf("") }
+    val workManager = remember { WorkManager.getInstance(context) }
     
-    val scope = rememberCoroutineScope()
+    // Track work status
+    val workInfos by workManager.getWorkInfosForUniqueWorkFlow("github_sync").collectAsState(initial = emptyList())
+    val currentWorkInfo = workInfos.firstOrNull()
 
     Column(
         modifier = Modifier
@@ -46,6 +51,9 @@ fun GitHubSyncScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("GITHUB SYNC", color = Color.White, style = MaterialTheme.typography.headlineLarge)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("BACKGROUND WORKER MODE", color = NeonIndigo, style = MaterialTheme.typography.labelSmall)
+        
         Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedTextField(
@@ -94,39 +102,55 @@ fun GitHubSyncScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        if (isSyncing) {
+        val isRunning = currentWorkInfo?.state == WorkInfo.State.RUNNING
+        val isEnqueued = currentWorkInfo?.state == WorkInfo.State.ENQUEUED
+        
+        if (isRunning || isEnqueued) {
             CircularProgressIndicator(color = NeonEmerald)
-            Text(statusMessage, color = NeonEmerald, modifier = Modifier.padding(top = 16.dp))
+            Text("Syncing in background...", color = NeonEmerald, modifier = Modifier.padding(top = 16.dp))
         } else {
             Button(
                 onClick = {
-                    scope.launch {
-                        isSyncing = true
-                        exporter.saveToken(token)
-                        
-                        var success = true
-                        snippets.forEach { snippet ->
-                            statusMessage = "Pushing ${snippet.title}..."
-                            val result = exporter.uploadFile(
-                                owner = owner,
-                                repo = repo,
-                                path = "src/${snippet.title}",
-                                code = snippet.codeContent,
-                                commitMessage = commitMsg
-                            )
-                            if (!result) success = false
-                        }
-                        
-                        statusMessage = if (success) "Sync Complete!" else "Some files failed."
-                        isSyncing = false
-                    }
+                    exporter.saveToken(token)
+                    
+                    val syncData = workDataOf(
+                        "owner" to owner,
+                        "repo" to repo,
+                        "commitMsg" to commitMsg
+                    )
+                    
+                    val constraints = Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+                    
+                    val syncRequest = OneTimeWorkRequestBuilder<GitHubSyncWorker>()
+                        .setInputData(syncData)
+                        .setConstraints(constraints)
+                        .build()
+                    
+                    workManager.enqueueUniqueWork(
+                        "github_sync",
+                        ExistingWorkPolicy.REPLACE,
+                        syncRequest
+                    )
+                    
+                    Timber.d("GitHubSyncWorker enqueued")
                 },
                 enabled = token.isNotBlank() && owner.isNotBlank() && repo.isNotBlank() && snippets.isNotEmpty(),
                 colors = ButtonDefaults.buttonColors(containerColor = NeonEmerald),
                 modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {
-                Text("PUSH SNIPPETS", color = Color.Black, fontWeight = FontWeight.Bold)
+                Text("START BACKGROUND SYNC", color = Color.Black, fontWeight = FontWeight.Bold)
             }
+        }
+        
+        currentWorkInfo?.let {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Last Status: ${it.state.name}",
+                color = if (it.state == WorkInfo.State.SUCCEEDED) NeonEmerald else Color.Gray,
+                fontSize = 12.sp
+            )
         }
 
         Spacer(modifier = Modifier.height(32.dp))

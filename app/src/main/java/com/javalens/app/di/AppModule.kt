@@ -48,7 +48,7 @@ val appModule = module {
     single { SnippetRepository(get(), get()) }
     
     // ViewModels
-    viewModel { ScannerViewModel(get()) }
+    viewModel { ScannerViewModel(get(), get()) }
     viewModel { VideoImportViewModel(get()) }
     viewModel { ProjectChatViewModel(get()) }
     

@@ -1,11 +1,12 @@
 package com.javalens.app
 
-import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.assertExists
 import com.javalens.app.ui.screens.ScannerScreen
 import com.javalens.app.viewmodel.ScannerViewModel
-import com.javalens.app.domain.repository.SnippetRepository
 import com.javalens.app.domain.model.Resource
+import com.javalens.app.domain.ai.AiDownloadStatus
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,20 +23,22 @@ class ScannerScreenTest {
         val viewModel = mockk<ScannerViewModel>(relaxed = true)
         
         // Mocking States
-        every { viewModel.isScanning } returns MutableStateFlow(false)
+        every { viewModel.isRecording } returns MutableStateFlow(false)
+        every { viewModel.isParsing } returns MutableStateFlow(false)
+        every { viewModel.progress } returns MutableStateFlow(0f)
         every { viewModel.currentScannedCode } returns MutableStateFlow("")
         every { viewModel.detectedFileName } returns MutableStateFlow("Ready to scan")
         every { viewModel.aiProcessState } returns MutableStateFlow(Resource.Idle)
-        every { viewModel.downloadStatus } returns MutableStateFlow(com.javalens.app.domain.ai.AiDownloadStatus.IDLE)
+        every { viewModel.saveResult } returns MutableStateFlow(Resource.Idle)
+        every { viewModel.downloadStatus } returns MutableStateFlow(AiDownloadStatus.IDLE)
         every { viewModel.isAiAvailable } returns MutableStateFlow(true)
 
         composeTestRule.setContent {
             ScannerScreen(viewModel = viewModel)
         }
 
-        // Check if main buttons exist (we can search by content description or specific text)
-        // CyberBodyButton usually has "SCAN" or similar, but we check by component presence
+        // Check if main buttons exist
         composeTestRule.onNodeWithContentDescription("Clear").assertExists()
-        composeTestRule.onNodeWithContentDescription("Magic Fix").assertExists()
+        composeTestRule.onNodeWithContentDescription("Start Scan").assertExists()
     }
 }

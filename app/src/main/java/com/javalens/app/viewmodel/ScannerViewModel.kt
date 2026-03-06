@@ -14,7 +14,6 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.javalens.app.data.SnippetEntity
-import com.javalens.app.domain.ai.AiDownloadStatus
 import com.javalens.app.domain.logic.CodeStitcher
 import com.javalens.app.domain.logic.FileSplitter
 import com.javalens.app.domain.model.Resource
@@ -27,7 +26,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
-import java.io.File
 
 class ScannerViewModel(
     private val repository: SnippetRepository,
@@ -59,30 +57,7 @@ class ScannerViewModel(
     private val _saveResult = MutableStateFlow<Resource<Unit>>(Resource.Idle)
     val saveResult: StateFlow<Resource<Unit>> = _saveResult.asStateFlow()
 
-    val downloadStatus: StateFlow<AiDownloadStatus> = repository.aiDownloadStatus
-
-    private val _isAiAvailable = MutableStateFlow<Boolean?>(null)
-    val isAiAvailable: StateFlow<Boolean?> = _isAiAvailable.asStateFlow()
-
     private var activeRecording: Recording? = null
-
-    init {
-        checkAiStatus()
-        viewModelScope.launch {
-            repository.triggerAiDownload()
-        }
-    }
-
-    fun checkAiStatus() {
-        viewModelScope.launch {
-            try {
-                _isAiAvailable.value = repository.isAiAvailable()
-                Timber.d("AI Availability status: ${_isAiAvailable.value}")
-            } catch (e: Exception) {
-                Timber.e(e, "Error checking AI status")
-            }
-        }
-    }
 
     fun startRecording(context: Context, videoCapture: VideoCapture<Recorder>) {
         val fileName = "scan_${System.currentTimeMillis()}.mp4"
@@ -181,7 +156,7 @@ class ScannerViewModel(
 
         viewModelScope.launch {
             _aiProcessState.value = Resource.Loading
-            Timber.i("Starting AI Magic Fix for code snippet")
+            Timber.i("Starting Cloud AI Magic Fix for code snippet")
 
             try {
                 val fixedCode = repository.fixCode(rawCode)
@@ -194,7 +169,7 @@ class ScannerViewModel(
                     codeContent = fixedCode
                 )
                 repository.insertSnippet(newSnippet)
-                Timber.i("Snippet '${metadata.title}' saved successfully via AI Fix")
+                Timber.i("Snippet '${metadata.title}' saved successfully via Cloud AI")
 
                 _currentScannedCode.value = fixedCode
                 _aiProcessState.value = Resource.Success(fixedCode)

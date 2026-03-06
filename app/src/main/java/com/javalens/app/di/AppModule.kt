@@ -2,16 +2,18 @@ package com.javalens.app.di
 
 import androidx.room.Room
 import com.javalens.app.data.AppDatabase
-import com.javalens.app.domain.ai.LocalAiService
+import com.javalens.app.domain.ai.CloudAiService
 import com.javalens.app.domain.repository.SnippetRepository
 import com.javalens.app.viewmodel.ScannerViewModel
 import com.javalens.app.viewmodel.VideoImportViewModel
 import com.javalens.app.viewmodel.ProjectChatViewModel
 import com.javalens.app.viewmodel.VaultViewModel
+import com.javalens.app.viewmodel.HubViewModel
 import com.javalens.app.domain.video.VideoCodeExtractor
 import com.javalens.app.domain.export.GitHubApi
 import com.javalens.app.domain.export.GitHubExporter
 import com.javalens.app.domain.export.GitHubSyncWorker
+import com.javalens.app.domain.utils.SettingsManager
 import androidx.work.WorkerParameters
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -32,8 +34,11 @@ val appModule = module {
     // DAO
     single { get<AppDatabase>().snippetDao() }
     
+    // Utils
+    single { SettingsManager(androidContext()) }
+    
     // Services
-    single { LocalAiService(androidContext()) }
+    single { CloudAiService(get()) }
     single { VideoCodeExtractor(androidContext()) }
     
     // GitHub Logic Setup
@@ -47,13 +52,14 @@ val appModule = module {
     single { GitHubExporter(androidContext(), get()) }
     
     // Repository
-    single { SnippetRepository(get(), get()) }
+    single { SnippetRepository(get(), get(), get()) }
     
     // ViewModels
     viewModel { ScannerViewModel(get(), get()) }
     viewModel { VideoImportViewModel(get()) }
     viewModel { ProjectChatViewModel(get()) }
     viewModel { VaultViewModel(get()) }
+    viewModel { HubViewModel(get()) }
     
     // Workers
     worker { (workerParams: WorkerParameters) ->

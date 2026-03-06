@@ -2,13 +2,15 @@ package com.javalens.app.domain.repository
 
 import com.javalens.app.data.SnippetDao
 import com.javalens.app.data.SnippetEntity
-import com.javalens.app.domain.ai.LocalAiService
+import com.javalens.app.domain.ai.CloudAiService
 import com.javalens.app.domain.ai.SnippetMetadata
+import com.javalens.app.domain.utils.SettingsManager
 import kotlinx.coroutines.flow.Flow
 
 class SnippetRepository(
     private val snippetDao: SnippetDao,
-    private val aiService: LocalAiService
+    private val aiService: CloudAiService,
+    private val settingsManager: SettingsManager
 ) {
     fun getAllSnippets(): Flow<List<SnippetEntity>> = snippetDao.getAllSnippets()
     
@@ -34,13 +36,15 @@ class SnippetRepository(
         return aiService.askProjectChat(context, question)
     }
 
-    suspend fun isAiAvailable(): Boolean {
-        return aiService.isAvailable()
+    fun hasAiApiKey(): Boolean {
+        return settingsManager.hasApiKey()
     }
 
-    suspend fun triggerAiDownload() {
-        aiService.triggerModelDownload()
+    fun saveAiApiKey(key: String) {
+        settingsManager.saveApiKey(key)
     }
-    
-    val aiDownloadStatus = aiService.downloadStatus
+
+    fun getAiApiKey(): String? {
+        return settingsManager.getApiKey()
+    }
 }

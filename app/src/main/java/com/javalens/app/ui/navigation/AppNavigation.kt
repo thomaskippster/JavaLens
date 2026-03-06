@@ -13,10 +13,7 @@ import androidx.navigation.navDeepLink
 import com.javalens.app.domain.export.GitHubExporter
 import com.javalens.app.domain.repository.SnippetRepository
 import com.javalens.app.ui.screens.*
-import com.javalens.app.viewmodel.ScannerViewModel
-import com.javalens.app.viewmodel.VideoImportViewModel
-import com.javalens.app.viewmodel.ProjectChatViewModel
-import com.javalens.app.viewmodel.VaultViewModel
+import com.javalens.app.viewmodel.*
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -53,12 +50,18 @@ fun AppNavigation(
 
     NavHost(navController = navController, startDestination = Screen.Hub.route) {
         composable(Screen.Hub.route) {
-            val aiStatus by scannerViewModel.downloadStatus.collectAsState()
+            val hubViewModel: HubViewModel = koinViewModel()
             HubScreen(
-                aiStatus = aiStatus,
+                viewModel = hubViewModel,
                 onScanClick = { navController.navigate(Screen.Scanner.route) },
                 onVaultClick = { navController.navigate(Screen.Vault.route) },
-                onChatClick = { navController.navigate(Screen.Chat.createRoute()) },
+                onChatClick = { 
+                    if (hubViewModel.hasApiKey()) {
+                        navController.navigate(Screen.Chat.createRoute())
+                    } else {
+                        // HubScreen shows status, but we could also show a snackbar here if needed
+                    }
+                },
                 onVideoClick = { navController.navigate(Screen.VideoImport.route) },
                 onGitHubClick = { navController.navigate(Screen.GitHub.route) }
             )

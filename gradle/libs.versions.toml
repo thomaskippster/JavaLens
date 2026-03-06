@@ -1,7 +1,7 @@
 [versions]
-agp = "8.13.2"
-kotlin = "2.1.0"
-ksp = "2.1.0-1.0.29"
+agp = "9.1.0"
+kotlin = "2.2.10"
+ksp = "2.3.2"
 compose-bom = "2024.02.00"
 lifecycle = "2.7.0"
 navigation = "2.7.7"
@@ -39,7 +39,7 @@ androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycl
 androidx-camera-video = { group = "androidx.camera", name = "camera-video", version.ref = "camerax" }
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
 google-mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "mlkit" }
-google-aicore = { group = "com.google.ai.edge.aicore", name = "aicore", version.ref = "aicore" }
+google-generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version = "0.9.0" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }

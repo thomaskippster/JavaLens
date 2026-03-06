@@ -223,7 +223,7 @@ fun ScannerScreen(
                         CircularProgressIndicator(color = NeonIndigo)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "GEMINI NANO REPAIRING CODE...",
+                            text = "CLOUD AI REPAIRING CODE...",
                             color = NeonIndigo,
                             fontSize = 12.sp,
                             style = MaterialTheme.typography.labelMedium

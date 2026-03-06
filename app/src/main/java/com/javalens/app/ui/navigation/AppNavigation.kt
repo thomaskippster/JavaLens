@@ -10,7 +10,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.javalens.app.domain.export.GitHubApi
 import com.javalens.app.domain.export.GitHubExporter
 import com.javalens.app.domain.repository.SnippetRepository
 import com.javalens.app.ui.screens.*
@@ -20,8 +19,6 @@ import com.javalens.app.viewmodel.ProjectChatViewModel
 import com.javalens.app.viewmodel.VaultViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 sealed class Screen(val route: String) {
     object Hub : Screen("hub")
@@ -51,18 +48,8 @@ fun AppNavigation(
     videoViewModel: VideoImportViewModel
 ) {
     val navController = rememberNavController()
-    val context = LocalContext.current
     val repository: SnippetRepository = koinInject()
-    
-    // GitHub Logic Setup
-    val githubApi = remember {
-        Retrofit.Builder()
-            .baseUrl("https://api.github.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(GitHubApi::class.java)
-    }
-    val githubExporter = remember { GitHubExporter(context, githubApi) }
+    val githubExporter: GitHubExporter = koinInject()
 
     NavHost(navController = navController, startDestination = Screen.Hub.route) {
         composable(Screen.Hub.route) {

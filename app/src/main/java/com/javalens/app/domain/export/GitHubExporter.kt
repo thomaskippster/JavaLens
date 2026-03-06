@@ -3,28 +3,7 @@ package com.javalens.app.domain.export
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import okhttp3.ResponseBody
-import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.Header
-import retrofit2.http.PUT
-import retrofit2.http.Path
-
-interface GitHubApi {
-    @PUT("repos/{owner}/{repo}/contents/{path}")
-    suspend fun createOrUpdateFile(
-        @Path("owner") owner: String,
-        @Path("repo") repo: String,
-        @Path("path") path: String,
-        @Header("Authorization") token: String,
-        @Body request: GitHubFileRequest
-    ): Response<ResponseBody>
-}
-
-data class GitHubFileRequest(
-    val message: String,
-    val content: String // Base64 encoded code
-)
+import timber.log.Timber
 
 class GitHubExporter(private val context: Context, private val api: GitHubApi) {
 
@@ -62,6 +41,7 @@ class GitHubExporter(private val context: Context, private val api: GitHubApi) {
         commitMessage: String
     ): Boolean {
         val token = getToken() ?: return false
+        val authHeader = "Bearer $token"
 
         // Sanitize path (replace spaces and invalid special chars with underscore)
         val sanitizedPath = path.replace(Regex("[^a-zA-Z0-9./_-]"), "_")
@@ -72,13 +52,31 @@ class GitHubExporter(private val context: Context, private val api: GitHubApi) {
             android.util.Base64.NO_WRAP
         )
         
-        val request = GitHubFileRequest(commitMessage, base64Content)
+        var existingSha: String? = null
+        try {
+            val fileResponse = api.getFile(owner, repo, sanitizedPath, authHeader)
+            if (fileResponse.isSuccessful) {
+                existingSha = fileResponse.body()?.get("sha")?.asString
+                Timber.d("File exists, existing sha: $existingSha")
+            }
+        } catch (e: Exception) {
+            Timber.d("File does not exist or error fetching sha: ${e.message}")
+        }
+
+        val request = GitHubFileRequest(
+            message = commitMessage,
+            content = base64Content,
+            sha = existingSha
+        )
         
         return try {
-            val response = api.createOrUpdateFile(owner, repo, sanitizedPath, "Bearer $token", request)
+            val response = api.createOrUpdateFile(owner, repo, sanitizedPath, authHeader, request)
+            if (!response.isSuccessful) {
+                Timber.e("GitHub upload failed: ${response.code()} - ${response.errorBody()?.string()}")
+            }
             response.isSuccessful
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "GitHub upload error")
             false
         }
     }

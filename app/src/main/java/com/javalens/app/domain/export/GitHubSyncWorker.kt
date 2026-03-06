@@ -25,10 +25,17 @@ class GitHubSyncWorker(
             var success = true
 
             snippets.forEach { snippet ->
+                // Sanitize title completely and append .java
+                val sanitizedTitle = snippet.title
+                    .replace(Regex("[^a-zA-Z0-9_-]"), "_")
+                    .ifBlank { "snippet_${snippet.id}" }
+                
+                val path = "src/${sanitizedTitle}.java"
+                
                 val result = exporter.uploadFile(
                     owner = owner,
                     repo = repo,
-                    path = "src/${snippet.title}",
+                    path = path,
                     code = snippet.codeContent,
                     commitMessage = commitMsg
                 )

@@ -12,6 +12,7 @@ import com.javalens.app.domain.video.VideoCodeExtractor
 import com.javalens.app.domain.export.GitHubApi
 import com.javalens.app.domain.export.GitHubExporter
 import com.javalens.app.domain.export.GitHubSyncWorker
+import androidx.work.WorkerParameters
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.androidx.workmanager.dsl.worker
@@ -55,5 +56,7 @@ val appModule = module {
     viewModel { VaultViewModel(get()) }
     
     // Workers
-    worker { GitHubSyncWorker(get(), get(), get(), get()) }
+    worker { (workerParams: WorkerParameters) ->
+        GitHubSyncWorker(get(), workerParams, get(), get())
+    }
 }

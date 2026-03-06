@@ -11,7 +11,7 @@ class CloudAiService(private val settingsManager: SettingsManager) {
     private fun getModel(): GenerativeModel? {
         val apiKey = settingsManager.getApiKey() ?: return null
         return GenerativeModel(
-            modelName = "gemini-1.5-flash",
+            modelName = "gemini-2.5-flash",
             apiKey = apiKey
         )
     }

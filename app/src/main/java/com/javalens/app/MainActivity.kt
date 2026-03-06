@@ -13,18 +13,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
-import com.javalens.app.domain.repository.SnippetRepository
 import com.javalens.app.ui.navigation.AppNavigation
 import com.javalens.app.ui.theme.JavaLensTheme
 import com.javalens.app.viewmodel.ScannerViewModel
 import com.javalens.app.viewmodel.VideoImportViewModel
-import kotlinx.collections.immutable.toImmutableList
-import org.koin.android.ext.android.inject
 import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : ComponentActivity() {
-
-    private val repository: SnippetRepository by inject()
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -44,12 +39,9 @@ class MainActivity : ComponentActivity() {
                     val scannerViewModel: ScannerViewModel = koinViewModel()
                     val videoViewModel: VideoImportViewModel = koinViewModel()
                     
-                    val snippets by repository.getAllSnippets().collectAsState(initial = emptyList())
-                    
                     AppNavigation(
                         scannerViewModel = scannerViewModel,
-                        videoViewModel = videoViewModel,
-                        vaultSnippets = snippets.toImmutableList()
+                        videoViewModel = videoViewModel
                     )
                 }
             }

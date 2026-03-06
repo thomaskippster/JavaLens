@@ -3,6 +3,7 @@ package com.javalens.app.ui.navigation
 import android.net.Uri
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,7 +17,7 @@ import com.javalens.app.ui.screens.*
 import com.javalens.app.viewmodel.ScannerViewModel
 import com.javalens.app.viewmodel.VideoImportViewModel
 import com.javalens.app.viewmodel.ProjectChatViewModel
-import kotlinx.collections.immutable.ImmutableList
+import com.javalens.app.viewmodel.VaultViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import retrofit2.Retrofit
@@ -47,8 +48,7 @@ sealed class Screen(val route: String) {
 @Composable
 fun AppNavigation(
     scannerViewModel: ScannerViewModel,
-    videoViewModel: VideoImportViewModel,
-    vaultSnippets: ImmutableList<com.javalens.app.data.SnippetEntity>
+    videoViewModel: VideoImportViewModel
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -82,8 +82,11 @@ fun AppNavigation(
         }
         
         composable(Screen.Vault.route) { 
+            val vaultViewModel: VaultViewModel = koinViewModel()
+            val snippets by vaultViewModel.snippets.collectAsStateWithLifecycle()
+            
             SnippetLibraryScreen(
-                snippets = vaultSnippets,
+                snippets = snippets,
                 onSnippetClick = { id -> 
                     navController.navigate(Screen.SnippetDetail.createRoute(id)) 
                 },
@@ -135,9 +138,12 @@ fun AppNavigation(
         }
         
         composable(Screen.GitHub.route) { 
+            val vaultViewModel: VaultViewModel = koinViewModel()
+            val snippets by vaultViewModel.snippets.collectAsStateWithLifecycle()
+            
             GitHubSyncScreen(
                 exporter = githubExporter, 
-                snippets = vaultSnippets,
+                snippets = snippets,
                 onBack = { navController.popBackStack() }
             ) 
         }

@@ -68,6 +68,9 @@ class ScannerViewModel(
 
     init {
         checkAiStatus()
+        viewModelScope.launch {
+            repository.triggerAiDownload()
+        }
     }
 
     fun checkAiStatus() {

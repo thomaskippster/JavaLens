@@ -37,6 +37,10 @@ class SnippetRepository(
     suspend fun isAiAvailable(): Boolean {
         return aiService.isAvailable()
     }
+
+    suspend fun triggerAiDownload() {
+        aiService.triggerModelDownload()
+    }
     
     val aiDownloadStatus = aiService.downloadStatus
 }

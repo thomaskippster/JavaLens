@@ -34,20 +34,8 @@ fun HubScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Spacer(modifier = Modifier.width(48.dp)) // Offset to center title
-                Text("JAVALENS", style = MaterialTheme.typography.displayMedium, color = Color.White)
-                IconButton(
-                    onClick = onSettingsClick,
-                    modifier = Modifier.background(CyberSlate, RoundedCornerShape(8.dp))
-                ) {
-                    Icon(Icons.Default.Settings, contentDescription = "Settings", tint = NeonIndigo)
-                }
-            }
+            Spacer(modifier = Modifier.height(48.dp))
+            Text("JAVALENS", style = MaterialTheme.typography.displayMedium, color = Color.White)
             
             Spacer(modifier = Modifier.height(8.dp))
             
@@ -75,6 +63,8 @@ fun HubScreen(
             HubButton("VIDEO IMPORT", "NPU SCAN", Icons.Default.VideoFile, Color(0xFFFFB800), onVideoClick)
             Spacer(modifier = Modifier.height(16.dp))
             HubButton("AI ANALYZER", "PROJECT CHAT", Icons.Default.Code, if (hasApiKey) Color.White else Color.Gray, onChatClick)
+            Spacer(modifier = Modifier.height(16.dp))
+            HubButton("CLOUD AI SETTINGS", "GEMINI API KEY", Icons.Default.Key, NeonEmerald, onSettingsClick)
             Spacer(modifier = Modifier.height(16.dp))
             HubButton("GITHUB SYNC", "PUSH CODE", Icons.Default.CloudSync, Color.Gray, onGitHubClick)
         }

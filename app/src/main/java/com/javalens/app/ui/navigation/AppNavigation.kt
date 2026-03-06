@@ -12,6 +12,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.javalens.app.domain.export.GitHubExporter
 import com.javalens.app.domain.repository.SnippetRepository
+import com.javalens.app.domain.utils.SettingsManager
 import com.javalens.app.ui.screens.*
 import com.javalens.app.viewmodel.*
 import org.koin.androidx.compose.koinViewModel
@@ -23,6 +24,7 @@ sealed class Screen(val route: String) {
     object Vault : Screen("vault")
     object VideoImport : Screen("video")
     object GitHub : Screen("github")
+    object Settings : Screen("settings")
     
     object Chat : Screen("chat?codeContext={codeContext}") {
         fun createRoute(codeContext: String? = null): String {
@@ -47,23 +49,22 @@ fun AppNavigation(
     val navController = rememberNavController()
     val repository: SnippetRepository = koinInject()
     val githubExporter: GitHubExporter = koinInject()
+    val settingsManager: SettingsManager = koinInject()
 
     NavHost(navController = navController, startDestination = Screen.Hub.route) {
         composable(Screen.Hub.route) {
-            val hubViewModel: HubViewModel = koinViewModel()
             HubScreen(
-                viewModel = hubViewModel,
+                hasApiKey = repository.hasAiApiKey(),
                 onScanClick = { navController.navigate(Screen.Scanner.route) },
                 onVaultClick = { navController.navigate(Screen.Vault.route) },
                 onChatClick = { 
-                    if (hubViewModel.hasApiKey()) {
+                    if (repository.hasAiApiKey()) {
                         navController.navigate(Screen.Chat.createRoute())
-                    } else {
-                        // HubScreen shows status, but we could also show a snackbar here if needed
                     }
                 },
                 onVideoClick = { navController.navigate(Screen.VideoImport.route) },
-                onGitHubClick = { navController.navigate(Screen.GitHub.route) }
+                onGitHubClick = { navController.navigate(Screen.GitHub.route) },
+                onSettingsClick = { navController.navigate(Screen.Settings.route) }
             )
         }
         
@@ -82,6 +83,13 @@ fun AppNavigation(
                 },
                 onBack = { navController.popBackStack() }
             ) 
+        }
+        
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                settingsManager = settingsManager,
+                onBack = { navController.popBackStack() }
+            )
         }
         
         composable(

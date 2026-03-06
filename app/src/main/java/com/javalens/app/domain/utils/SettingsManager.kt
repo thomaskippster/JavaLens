@@ -17,15 +17,15 @@ class SettingsManager(context: Context) {
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
-    fun saveApiKey(apiKey: String) {
+    fun saveGeminiKey(apiKey: String) {
         secureStorage.edit().putString("gemini_api_key", apiKey).apply()
     }
 
-    fun getApiKey(): String? {
+    fun getGeminiKey(): String? {
         return secureStorage.getString("gemini_api_key", null)
     }
 
-    fun hasApiKey(): Boolean {
-        return !getApiKey().isNullOrBlank()
+    fun hasGeminiKey(): Boolean {
+        return !getGeminiKey().isNullOrBlank()
     }
 }

@@ -13,25 +13,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.javalens.app.ui.theme.*
 import com.javalens.app.ui.components.HubButton
-import com.javalens.app.viewmodel.HubViewModel
 
 @Composable
 fun HubScreen(
-    viewModel: HubViewModel,
+    hasApiKey: Boolean,
     onScanClick: () -> Unit,
     onVaultClick: () -> Unit,
     onChatClick: () -> Unit,
     onVideoClick: () -> Unit,
-    onGitHubClick: () -> Unit
+    onGitHubClick: () -> Unit,
+    onSettingsClick: () -> Unit
 ) {
-    var showSettingsDialog by remember { mutableStateOf(false) }
-    val apiKey by viewModel.apiKey.collectAsStateWithLifecycle()
-    val hasApiKey = viewModel.hasApiKey()
-
     Box(modifier = Modifier.fillMaxSize().background(CyberBlack)) {
         Column(
             modifier = Modifier
@@ -45,10 +39,10 @@ fun HubScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Spacer(modifier = Modifier.width(48.dp)) // To center title
+                Spacer(modifier = Modifier.width(48.dp)) // Offset to center title
                 Text("JAVALENS", style = MaterialTheme.typography.displayMedium, color = Color.White)
                 IconButton(
-                    onClick = { showSettingsDialog = true },
+                    onClick = onSettingsClick,
                     modifier = Modifier.background(CyberSlate, RoundedCornerShape(8.dp))
                 ) {
                     Icon(Icons.Default.Settings, contentDescription = "Settings", tint = NeonIndigo)
@@ -84,69 +78,5 @@ fun HubScreen(
             Spacer(modifier = Modifier.height(16.dp))
             HubButton("GITHUB SYNC", "PUSH CODE", Icons.Default.CloudSync, Color.Gray, onGitHubClick)
         }
-
-        if (showSettingsDialog) {
-            ApiKeyDialog(
-                currentKey = apiKey,
-                onDismiss = { showSettingsDialog = false },
-                onSave = { newKey ->
-                    viewModel.updateApiKey(newKey)
-                    showSettingsDialog = false
-                }
-            )
-        }
     }
-}
-
-@Composable
-fun ApiKeyDialog(
-    currentKey: String,
-    onDismiss: () -> Unit,
-    onSave: (String) -> Unit
-) {
-    var text by remember { mutableStateOf(currentKey) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = CyberSlate,
-        title = { Text("Gemini API Settings", color = Color.White) },
-        text = {
-            Column {
-                Text(
-                    "Enter your Gemini API Key to enable Cloud AI features. Your key is stored securely on your device.",
-                    color = Color.LightGray,
-                    fontSize = 14.sp
-                )
-                Spacer(Modifier.height(16.dp))
-                TextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    placeholder = { Text("Paste API Key here...", color = Color.Gray) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = CyberBlack,
-                        unfocusedContainerColor = CyberBlack,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedIndicatorColor = NeonIndigo,
-                        unfocusedIndicatorColor = Color.Gray
-                    ),
-                    singleLine = true
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { onSave(text) },
-                colors = ButtonDefaults.buttonColors(containerColor = NeonIndigo)
-            ) {
-                Text("SAVE")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("CANCEL", color = Color.Gray)
-            }
-        }
-    )
 }

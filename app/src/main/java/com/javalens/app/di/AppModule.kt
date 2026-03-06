@@ -8,7 +8,6 @@ import com.javalens.app.viewmodel.ScannerViewModel
 import com.javalens.app.viewmodel.VideoImportViewModel
 import com.javalens.app.viewmodel.ProjectChatViewModel
 import com.javalens.app.viewmodel.VaultViewModel
-import com.javalens.app.viewmodel.HubViewModel
 import com.javalens.app.domain.video.VideoCodeExtractor
 import com.javalens.app.domain.export.GitHubApi
 import com.javalens.app.domain.export.GitHubExporter
@@ -59,7 +58,6 @@ val appModule = module {
     viewModel { VideoImportViewModel(get()) }
     viewModel { ProjectChatViewModel(get()) }
     viewModel { VaultViewModel(get()) }
-    viewModel { HubViewModel(get()) }
     
     // Workers
     worker { (workerParams: WorkerParameters) ->

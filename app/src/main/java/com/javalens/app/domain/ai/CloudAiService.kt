@@ -9,14 +9,14 @@ import timber.log.Timber
 class CloudAiService(private val settingsManager: SettingsManager) {
 
     private fun getModel(): GenerativeModel? {
-        val apiKey = settingsManager.getApiKey() ?: return null
+        val apiKey = settingsManager.getGeminiKey() ?: return null
         return GenerativeModel(
             modelName = "gemini-2.5-flash",
             apiKey = apiKey
         )
     }
 
-    private val AI_UNAVAILABLE_MSG = "Please set your Gemini API Key in the settings first."
+    private val AI_UNAVAILABLE_MSG = "API Key missing. Please set it in the Hub settings."
 
     suspend fun magicOcrFix(rawCode: String): String = withContext(Dispatchers.IO) {
         val model = getModel() ?: return@withContext AI_UNAVAILABLE_MSG

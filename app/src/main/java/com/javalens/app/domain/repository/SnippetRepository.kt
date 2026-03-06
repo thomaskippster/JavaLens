@@ -37,14 +37,14 @@ class SnippetRepository(
     }
 
     fun hasAiApiKey(): Boolean {
-        return settingsManager.hasApiKey()
+        return settingsManager.hasGeminiKey()
     }
 
     fun saveAiApiKey(key: String) {
-        settingsManager.saveApiKey(key)
+        settingsManager.saveGeminiKey(key)
     }
 
     fun getAiApiKey(): String? {
-        return settingsManager.getApiKey()
+        return settingsManager.getGeminiKey()
     }
 }
